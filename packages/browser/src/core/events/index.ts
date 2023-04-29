@@ -215,7 +215,7 @@ export class EventFactory {
       // if user does "analytics.page('category', 'name', { url: "foo" })"... use the properties as source of truth
       const pageContextFromEventProps = pick(
         event.properties,
-        Object.keys(defaultPageContext)
+        Object.keys(defaultPageContext) as any
       )
 
       event.context.page = {
