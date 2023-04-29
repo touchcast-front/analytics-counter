@@ -9,6 +9,8 @@ import {
   SegmentEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
+import { getPageContext, PageContext } from '../page'
+import { pick } from 'lodash'
 
 export * from './interfaces'
 
@@ -23,16 +25,20 @@ export class EventFactory {
     event: string,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      event,
-      type: 'track' as const,
-      properties,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        event,
+        type: 'track' as const,
+        properties,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+      },
+      pageCtx
+    )
   }
 
   page(
@@ -40,7 +46,8 @@ export class EventFactory {
     page: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'page' as const,
@@ -59,10 +66,13 @@ export class EventFactory {
       event.name = page
     }
 
-    return this.normalize({
-      ...this.baseEvent(),
-      ...event,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...event,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   screen(
@@ -70,7 +80,8 @@ export class EventFactory {
     screen: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'screen' as const,
@@ -86,50 +97,61 @@ export class EventFactory {
     if (screen !== null) {
       event.name = screen
     }
-
-    return this.normalize({
-      ...this.baseEvent(),
-      ...event,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...event,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   identify(
     userId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      type: 'identify' as const,
-      userId,
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        type: 'identify' as const,
+        userId,
+        traits,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+      },
+      pageCtx
+    )
   }
 
   group(
     groupId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      type: 'group' as const,
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-      groupId,
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        type: 'group' as const,
+        traits,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+        groupId,
+      },
+      pageCtx
+    )
   }
 
   alias(
     to: string,
     from: string | null,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const base: Partial<SegmentEvent> = {
       userId: to,
@@ -149,10 +171,13 @@ export class EventFactory {
       } as SegmentEvent)
     }
 
-    return this.normalize({
-      ...this.baseEvent(),
-      ...base,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...base,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   private baseEvent(): Partial<SegmentEvent> {
@@ -172,6 +197,38 @@ export class EventFactory {
     }
 
     return base
+  }
+
+  private addEventPageContext(
+    event: SegmentEvent,
+    pageCtx: PageContext | undefined
+  ): void {
+    event.context = event.context || {}
+    const defaultPageContext = getPageContext()
+    event.context.page = {
+      ...defaultPageContext,
+      ...pageCtx,
+      ...event.context.page,
+    }
+
+    if (event.type === 'page') {
+      // if user does "analytics.page('category', 'name', { url: "foo" })"... use the properties as source of truth
+      const pageContextFromEventProps = pick(
+        event.properties,
+        Object.keys(defaultPageContext)
+      )
+
+      event.context.page = {
+        ...event.context.page,
+        ...pageContextFromEventProps,
+      }
+
+      event.properties = {
+        ...event.context.page,
+        ...event.properties,
+        ...(event.name ? { name: event.name } : {}),
+      }
+    }
   }
 
   /**
@@ -204,7 +261,7 @@ export class EventFactory {
     return [context, overrides]
   }
 
-  public normalize(event: SegmentEvent): SegmentEvent {
+  public normalize(event: SegmentEvent, pageCtx?: PageContext): SegmentEvent {
     // set anonymousId globally if we encounter an override
     //segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/#override-the-anonymous-id-using-the-options-object
     event.options?.anonymousId &&
@@ -235,21 +292,18 @@ export class EventFactory {
     const [context, overrides] = this.context(event)
     const { options, ...rest } = event
 
-    const body = {
+    const newEvent: SegmentEvent = {
       timestamp: new Date(),
       ...rest,
       context,
       integrations: allIntegrations,
       ...overrides,
     }
+    // NOTE() This is a solution that was implemented a long time ago to prevent some hash collision issue.
+    newEvent.messageId = 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid())
 
-    const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
+    this.addEventPageContext(newEvent, pageCtx)
 
-    const evt: SegmentEvent = {
-      ...body,
-      messageId,
-    }
-
-    return evt
+    return newEvent
   }
 }

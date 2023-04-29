@@ -1,6 +1,7 @@
 import uuid from '@lukeed/uuid'
 import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
+import { createPageCtx } from '../../../test-helpers/fixtures'
 import { User } from '../../user'
 import { SegmentEvent, Options } from '../interfaces'
 
@@ -10,6 +11,11 @@ describe('Event Factory', () => {
 
   const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
+
+  const pageCtxFixture = createPageCtx()
+  const defaultContext = {
+    page: pageCtxFixture,
+  }
 
   beforeEach(() => {
     user = new User()
@@ -67,7 +73,7 @@ describe('Event Factory', () => {
 
     it('accepts properties', () => {
       const page = factory.page('category', 'name', shoes)
-      expect(page.properties).toEqual(shoes)
+      expect(page.properties).toEqual(expect.objectContaining(shoes))
     })
 
     it('ignores category and page if not passed in', () => {
@@ -153,7 +159,7 @@ describe('Event Factory', () => {
       const track = factory.track('Order Completed', shoes, {
         opt1: true,
       })
-      expect(track.context).toEqual({ opt1: true })
+      expect(track.context).toEqual({ opt1: true, ...defaultContext })
     })
 
     test('sets context correctly if property arg is undefined', () => {
@@ -161,7 +167,10 @@ describe('Event Factory', () => {
         context: { page: { path: '/custom' } },
       })
 
-      expect(track.context).toEqual({ page: { path: '/custom' } })
+      expect(track.context?.page).toEqual({
+        ...pageCtxFixture,
+        path: '/custom',
+      })
     })
 
     test('sets integrations', () => {
@@ -243,7 +252,11 @@ describe('Event Factory', () => {
         },
       })
 
-      expect(track.context).toEqual({ opt1: true, opt2: '🥝' })
+      expect(track.context).toEqual({
+        opt1: true,
+        opt2: '🥝',
+        ...defaultContext,
+      })
     })
 
     test('should not move known options into `context`', () => {
@@ -257,7 +270,11 @@ describe('Event Factory', () => {
         timestamp: new Date(),
       })
 
-      expect(track.context).toEqual({ opt1: true, opt2: '🥝' })
+      expect(track.context).toEqual({
+        opt1: true,
+        opt2: '🥝',
+        ...defaultContext,
+      })
     })
 
     test('accepts an anonymous id', () => {
@@ -265,7 +282,7 @@ describe('Event Factory', () => {
         anonymousId: 'anon-1',
       })
 
-      expect(track.context).toEqual({})
+      expect(track.context).toEqual(defaultContext)
       expect(track.anonymousId).toEqual('anon-1')
     })
 
@@ -275,7 +292,7 @@ describe('Event Factory', () => {
         timestamp,
       })
 
-      expect(track.context).toEqual({})
+      expect(track.context).toEqual(defaultContext)
       expect(track.timestamp).toEqual(timestamp)
     })
 
@@ -306,6 +323,7 @@ describe('Event Factory', () => {
           name: 'ajs-next',
           version: '0.1.0',
         },
+        page: pageCtxFixture,
       })
     })
 
@@ -328,6 +346,7 @@ describe('Event Factory', () => {
         },
         foreignProp: '🇧🇷',
         innerProp: '👻',
+        ...defaultContext,
       })
     })
 
@@ -394,7 +413,7 @@ describe('Event Factory', () => {
           integrations: { Segment: true },
           type: 'track',
           userId: 'user-id',
-          context: {},
+          context: defaultContext,
         })
       })
     })

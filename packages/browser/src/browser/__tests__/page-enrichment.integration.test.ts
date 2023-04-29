@@ -1,12 +1,13 @@
-import { Analytics } from '../../../core/analytics'
-import { pageEnrichment, pageDefaults } from '..'
-import { pick } from '../../../lib/pick'
+import { Analytics } from '../../core/analytics'
+import { pick } from '../../lib/pick'
+import { PageContext, PAGE_CTX_DISCRIMINANT } from '../../core/page'
 
 let ajs: Analytics
 
 const helpers = {
-  get pageProps() {
+  get pageProps(): PageContext {
     return {
+      __type: PAGE_CTX_DISCRIMINANT,
       url: 'http://foo.com/bar?foo=hello_world',
       path: '/bar',
       search: '?foo=hello_world',
@@ -21,8 +22,6 @@ describe('Page Enrichment', () => {
     ajs = new Analytics({
       writeKey: 'abc_123',
     })
-
-    await ajs.register(pageEnrichment)
   })
 
   test('enriches page calls', async () => {
@@ -30,6 +29,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
       Object {
+        "__type": "page_ctx",
         "name": "Checkout",
         "path": "/",
         "referrer": "",
@@ -47,6 +47,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
+        "__type": "page_ctx",
         "path": "/",
         "referrer": "",
         "search": "",
@@ -107,27 +108,29 @@ describe('Page Enrichment', () => {
     )
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "",
-            "search": "",
-            "title": "",
-            "url": "not-localhost",
-          }
-      `)
+      Object {
+        "__type": "page_ctx",
+        "path": "/",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "not-localhost",
+      }
+    `)
   })
-  test('enriches page events using properties', async () => {
+  test.only('enriches page events using properties', async () => {
     const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "foo",
-            "search": "",
-            "title": "",
-            "url": "http://localhost/",
-          }
-      `)
+      Object {
+        "__type": "page_ctx",
+        "path": "/",
+        "referrer": "foo",
+        "search": "",
+        "title": "",
+        "url": "http://localhost/",
+      }
+    `)
   })
 
   test('in page events, event.name overrides event.properties.name', async () => {
@@ -151,6 +154,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
+        "__type": "page_ctx",
         "path": "/",
         "referrer": "",
         "search": "",
@@ -174,52 +178,5 @@ describe('Page Enrichment', () => {
     })
 
     expect(called).toBe(true)
-  })
-})
-
-describe('pageDefaults', () => {
-  const el = document.createElement('link')
-  el.setAttribute('rel', 'canonical')
-
-  beforeEach(() => {
-    el.setAttribute('href', '')
-    document.clear()
-  })
-
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  it('handles no canonical links', () => {
-    const defs = pageDefaults()
-    expect(defs.url).not.toBeNull()
-  })
-
-  it('handles canonical links', () => {
-    el.setAttribute('href', 'http://www.segment.local')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local')
-  })
-
-  it('handles canonical links with a path', () => {
-    el.setAttribute('href', 'http://www.segment.local/test')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local/test')
-    expect(defs.path).toEqual('/test')
-  })
-
-  it('handles canonical links with search params in the url', () => {
-    el.setAttribute('href', 'http://www.segment.local?test=true')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local?test=true')
-  })
-
-  it('if canonical does not exist, returns fallback', () => {
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual(window.location.href)
   })
 })

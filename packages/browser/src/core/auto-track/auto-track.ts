@@ -1,6 +1,6 @@
-import { Analytics } from './analytics'
-import { EventProperties, Options } from './events'
-import { pTimeout } from './callback'
+import { Analytics } from '../analytics'
+import { EventProperties, Options } from '../events'
+import { pTimeout } from '../callback'
 
 // Check if a user is opening the link in a new tab
 function userNewTab(event: Event): boolean {

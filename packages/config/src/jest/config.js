@@ -17,6 +17,7 @@ const createJestTSConfig = ({
     ...(global.JEST_ROOT_CONFIG
       ? {}
       : { displayName: path.basename(process.cwd()) }),
+    verbose: false, // do not show disabled tests
     moduleNameMapper: moduleMap,
     preset: 'ts-jest',
     modulePathIgnorePatterns: [

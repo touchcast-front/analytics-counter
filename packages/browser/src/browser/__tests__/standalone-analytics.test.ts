@@ -8,6 +8,7 @@ import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
 import { EventQueue } from '../../core/queue/event-queue'
+import { createPageCtx } from '../../test-helpers/fixtures'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -38,6 +39,8 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
+const pageCtxFixture = createPageCtx({ url: 'https://segment.com/' })
+
 describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
@@ -65,6 +68,7 @@ describe('standalone bundle', () => {
     `.trim()
 
     const virtualConsole = new jsdom.VirtualConsole()
+
     const jsd = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
@@ -156,12 +160,20 @@ describe('standalone bundle', () => {
 
     await sleep(0)
 
-    expect(track).toHaveBeenCalledWith('fruit basket', {
-      fruits: ['🍌', '🍇'],
-    })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
+    expect(track).toHaveBeenCalledWith(
+      'fruit basket',
+      {
+        fruits: ['🍌', '🍇'],
+      },
+      pageCtxFixture
+    )
+    expect(identify).toHaveBeenCalledWith(
+      'netto',
+      {
+        employer: 'segment',
+      },
+      pageCtxFixture
+    )
 
     expect(page).toHaveBeenCalled()
   })
@@ -267,13 +279,25 @@ describe('standalone bundle', () => {
 
     await sleep(0)
 
-    expect(track).toHaveBeenCalledWith('fruit basket', {
-      fruits: ['🍌', '🍇'],
-    })
-    expect(track).toHaveBeenCalledWith('race conditions', { foo: 'bar' })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
+    expect(track).toHaveBeenCalledWith(
+      'fruit basket',
+      {
+        fruits: ['🍌', '🍇'],
+      },
+      pageCtxFixture
+    )
+    expect(track).toHaveBeenCalledWith(
+      'race conditions',
+      { foo: 'bar' },
+      pageCtxFixture
+    )
+    expect(identify).toHaveBeenCalledWith(
+      'netto',
+      {
+        employer: 'segment',
+      },
+      pageCtxFixture
+    )
 
     expect(page).toHaveBeenCalled()
   })

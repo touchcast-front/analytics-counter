@@ -55,7 +55,7 @@ describe('Inspector', () => {
 
     await deliveryPromise
 
-    expect(enrichedFn).toHaveBeenCalledTimes(2)
+    expect(enrichedFn).toHaveBeenCalledTimes(1)
     expect(deliveredFn).toHaveBeenCalledTimes(1)
   })
 

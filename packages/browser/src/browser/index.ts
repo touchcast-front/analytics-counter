@@ -9,7 +9,6 @@ import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
 import { createDeferred } from '../lib/create-deferred'
-import { pageEnrichment } from '../plugins/page-enrichment'
 import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
@@ -22,7 +21,6 @@ import {
   flushSetAnonymousID,
   flushOn,
 } from '../core/buffer'
-import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
@@ -127,7 +125,7 @@ function flushPreBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): void {
-  buffer.push(...popSnippetWindowBuffer())
+  buffer.fetchSnippetWindowBuffer()
   flushSetAnonymousID(analytics, buffer)
   flushOn(analytics, buffer)
 }
@@ -141,9 +139,9 @@ async function flushFinalBuffer(
 ): Promise<void> {
   // Call popSnippetWindowBuffer before each flush task since there may be
   // analytics calls during async function calls.
-  buffer.push(...popSnippetWindowBuffer())
+  buffer.fetchSnippetWindowBuffer()
   await flushAddSourceMiddleware(analytics, buffer)
-  buffer.push(...popSnippetWindowBuffer())
+  buffer.fetchSnippetWindowBuffer()
   flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
@@ -209,7 +207,6 @@ async function registerPlugins(
 
   const toRegister = [
     validation,
-    pageEnrichment,
     ...plugins,
     ...legacyDestinations,
     ...remotePlugins,

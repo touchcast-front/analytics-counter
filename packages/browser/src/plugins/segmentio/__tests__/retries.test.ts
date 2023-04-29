@@ -3,7 +3,6 @@ import { Analytics } from '../../../core/analytics'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../../core/connection'
 import { Plugin } from '../../../core/plugin'
-import { pageEnrichment } from '../../page-enrichment'
 import { scheduleFlush } from '../schedule-flush'
 import * as PPQ from '../../../lib/priority-queue/persisted'
 import * as PQ from '../../../lib/priority-queue'
@@ -56,7 +55,7 @@ describe('Segment.io retries', () => {
 
         segment = segmentio(analytics, options, {})
 
-        await analytics.register(segment, pageEnrichment)
+        await analytics.register(segment)
       })
 
       test(`add events to the queue`, async () => {
