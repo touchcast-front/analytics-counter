@@ -10,7 +10,7 @@ import {
 } from './interfaces'
 import md5 from 'spark-md5'
 import { getPageContext, PageContext } from '../page'
-import { pick } from 'lodash'
+import { pick } from '../../lib/pick'
 
 export * from './interfaces'
 
