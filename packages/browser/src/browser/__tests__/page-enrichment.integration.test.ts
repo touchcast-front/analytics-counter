@@ -1,13 +1,12 @@
 import { Analytics } from '../../core/analytics'
 import { pick } from '../../lib/pick'
-import { PageContext, PAGE_CTX_DISCRIMINANT } from '../../core/page'
+import { PageContext } from '../../core/page'
 
 let ajs: Analytics
 
 const helpers = {
   get pageProps(): PageContext {
     return {
-      __type: PAGE_CTX_DISCRIMINANT,
       url: 'http://foo.com/bar?foo=hello_world',
       path: '/bar',
       search: '?foo=hello_world',
@@ -58,33 +57,50 @@ describe('Page Enrichment', () => {
   })
 
   describe('event.properties override behavior', () => {
-    test('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
-      const eventProps = { ...helpers.pageProps }
-      ;(eventProps as any)['should_not_show_up'] = 'hello'
-      const ctx = await ajs.track('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual(
-        pick(eventProps, ['url', 'path', 'referrer', 'search', 'title'])
-      )
+    test('for page events, only page properties in event.properties (url, referrer, etc) should be copied to context.page', async () => {
+      const eventProps = {
+        ...helpers.pageProps,
+        hello: 'fail_if_in_context',
+      }
+      const { event } = await ajs.page('category', 'name', eventProps)
+      expect('hello' in event.context!.page!).toBeFalsy() // no non-page properties should be in context.
+      expect(event.properties!.category).toBe('category')
+      expect(event.properties!.name).toBe('name')
+      expect(event.properties).toEqual(expect.objectContaining(eventProps))
     })
 
-    test('event page properties should not be mutated', async () => {
-      const eventProps = { ...helpers.pageProps }
-      const ctx = await ajs.track('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual(eventProps)
+    test('for non-page events, special page properties in event.properties should be ignored', async () => {
+      const properties = {
+        url: 'http://hello-world.com',
+      }
+      const { event } = await ajs.track('foo', properties)
+      expect(event.properties).toEqual(properties)
+      expect(event.context?.page).toMatchInlineSnapshot(`
+        Object {
+          "__type": "page_ctx",
+          "path": "/",
+          "referrer": "",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        }
+      `)
     })
 
-    test('page properties should have defaults', async () => {
+    test('page properties should have defaults, even if only a few properties are set', async () => {
       const eventProps = pick(helpers.pageProps, ['path', 'referrer'])
-      const ctx = await ajs.track('My Event', eventProps)
+      const ctx = await ajs.page(undefined, undefined, eventProps)
       const page = ctx.event.context!.page
-      expect(page).toEqual({
-        ...eventProps,
-        url: 'http://localhost/',
-        search: '',
-        title: '',
-      })
+      expect(page).toMatchInlineSnapshot(`
+        Object {
+          "__type": "page_ctx",
+          "path": "/bar",
+          "referrer": "http://google.com",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        }
+      `)
     })
 
     test('undefined / null / empty string properties on event get overridden as usual', async () => {
@@ -92,7 +108,7 @@ describe('Page Enrichment', () => {
       eventProps.referrer = ''
       eventProps.path = undefined as any
       eventProps.title = null as any
-      const ctx = await ajs.track('My Event', eventProps)
+      const ctx = await ajs.page(undefined, undefined, eventProps)
       const page = ctx.event.context!.page
       expect(page).toEqual(
         expect.objectContaining({ referrer: '', path: undefined, title: null })
@@ -118,7 +134,7 @@ describe('Page Enrichment', () => {
       }
     `)
   })
-  test.only('enriches page events using properties', async () => {
+  test('enriches page events using properties', async () => {
     const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
