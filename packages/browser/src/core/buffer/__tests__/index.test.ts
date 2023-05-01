@@ -227,14 +227,12 @@ describe('callAnalyticsMethod', () => {
   beforeEach(() => {
     resolveSpy = jest.fn().mockImplementation((el) => `resolved: ${el}`)
     rejectSpy = jest.fn().mockImplementation((el) => `rejected: ${el}`)
-    methodCall = {
-      args: ['foo', {}],
-      called: false,
-      method: 'track',
-      resolve: resolveSpy,
-      reject: rejectSpy,
-    } as PreInitMethodCall
-
+    methodCall = new PreInitMethodCall(
+      'track',
+      ['foo', {}],
+      resolveSpy,
+      rejectSpy
+    )
     ajs = new Analytics({
       writeKey: 'abc',
     })
@@ -304,21 +302,19 @@ describe('flushAnalyticsCallsInNewTask', () => {
     // @ts-ignore
     Analytics.prototype['asyncMethod'] = () => Promise.resolve(123)
 
-    const synchronousMethod = {
-      method: 'synchronousMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
+    const synchronousMethod = new PreInitMethodCall(
+      'synchronousMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
 
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
 
     const buffer = new PreInitMethodCallBuffer().push(
       synchronousMethod,
@@ -337,13 +333,12 @@ describe('flushAnalyticsCallsInNewTask', () => {
     // @ts-ignore
     Analytics.prototype['asyncMethod'] = () => Promise.reject('oops!')
 
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
 
     const buffer = new PreInitMethodCallBuffer().push(asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
@@ -360,21 +355,18 @@ describe('flushAnalyticsCallsInNewTask', () => {
       throw new Error('Ooops!')
     }
 
-    const synchronousMethod = {
-      method: 'synchronousMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
-
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
+    const synchronousMethod = new PreInitMethodCall(
+      'synchronousMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
 
     const buffer = new PreInitMethodCallBuffer().push(
       synchronousMethod,
