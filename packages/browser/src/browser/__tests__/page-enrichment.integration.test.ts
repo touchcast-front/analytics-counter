@@ -1,9 +1,6 @@
 import { Analytics } from '../../core/analytics'
 import { pick } from '../../lib/pick'
 import { PageContext, PAGE_CTX_DISCRIMINANT } from '../../core/page'
-import { SegmentEvent } from '../../core/events'
-import { Context } from '../..'
-import { read } from 'fs'
 
 let ajs: Analytics
 
