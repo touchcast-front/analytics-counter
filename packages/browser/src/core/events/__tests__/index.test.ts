@@ -1,7 +1,8 @@
 import uuid from '@lukeed/uuid'
 import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
-import { createPageCtx } from '../../../test-helpers/fixtures'
+import { pageCtxFixture } from '../../../test-helpers/fixtures'
+import { isBufferedPageContext } from '../../page'
 import { User } from '../../user'
 import { SegmentEvent, Options } from '../interfaces'
 
@@ -12,7 +13,6 @@ describe('Event Factory', () => {
   const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
 
-  const pageCtxFixture = createPageCtx()
   const defaultContext = {
     page: pageCtxFixture,
   }
@@ -414,6 +414,42 @@ describe('Event Factory', () => {
           type: 'track',
           userId: 'user-id',
           context: defaultContext,
+        })
+      })
+    })
+  })
+
+  describe('pageContext', () => {
+    let events: [
+      SegmentEvent['type'],
+      NonNullable<SegmentEvent['context']>['page']
+    ][]
+    beforeAll(() => {
+      events = [
+        factory.identify('foo'),
+        factory.track('foo'),
+        factory.group('foo'),
+        factory.page('foo', 'bar'),
+        factory.alias('foo', 'bar'),
+      ].map((el) => [el.type, el.context?.page])
+    })
+
+    test(`context.page has the expected properties`, async () => {
+      events.forEach(([type, page]) => {
+        expect({
+          type,
+          isBufferedPageContext: isBufferedPageContext(page),
+          page,
+        }).toEqual({
+          type,
+          isBufferedPageContext: false,
+          page: {
+            path: expect.any(String),
+            referrer: expect.any(String),
+            search: expect.any(String),
+            title: expect.any(String),
+            url: 'http://localhost/',
+          },
         })
       })
     })

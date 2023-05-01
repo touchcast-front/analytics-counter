@@ -1,7 +1,10 @@
-import { BufferedPageContext, PAGE_CTX_DISCRIMINANT } from '../../core/page'
+import {
+  BufferedPageContext,
+  PageContext,
+  PAGE_CTX_DISCRIMINANT,
+} from '../../core/page'
 
-const pageCtxFixture: BufferedPageContext = {
-  __type: PAGE_CTX_DISCRIMINANT,
+export const pageCtxFixture: PageContext = {
   path: '/',
   referrer: '',
   search: '',
@@ -9,9 +12,7 @@ const pageCtxFixture: BufferedPageContext = {
   url: 'http://localhost/',
 }
 
-export const createPageCtx = (
-  ctx: Partial<BufferedPageContext> = {}
-): BufferedPageContext => ({
+export const bufferedPageCtxFixture: BufferedPageContext = {
+  __type: PAGE_CTX_DISCRIMINANT,
   ...pageCtxFixture,
-  ...ctx,
-})
+}

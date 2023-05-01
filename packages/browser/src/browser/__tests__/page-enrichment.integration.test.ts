@@ -1,11 +1,14 @@
 import { Analytics } from '../../core/analytics'
 import { pick } from '../../lib/pick'
-import { BufferedPageContext } from '../../core/page'
+import { PageContext, PAGE_CTX_DISCRIMINANT } from '../../core/page'
+import { SegmentEvent } from '../../core/events'
+import { Context } from '../..'
+import { read } from 'fs'
 
 let ajs: Analytics
 
 const helpers = {
-  get pageProps(): BufferedPageContext {
+  get pageProps(): PageContext {
     return {
       url: 'http://foo.com/bar?foo=hello_world',
       path: '/bar',
@@ -28,7 +31,6 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
       Object {
-        "__type": "page_ctx",
         "name": "Checkout",
         "path": "/",
         "referrer": "",
@@ -46,7 +48,6 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "__type": "page_ctx",
         "path": "/",
         "referrer": "",
         "search": "",
@@ -77,7 +78,6 @@ describe('Page Enrichment', () => {
       expect(event.properties).toEqual(properties)
       expect(event.context?.page).toMatchInlineSnapshot(`
         Object {
-          "__type": "page_ctx",
           "path": "/",
           "referrer": "",
           "search": "",
@@ -93,7 +93,6 @@ describe('Page Enrichment', () => {
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
         Object {
-          "__type": "page_ctx",
           "path": "/bar",
           "referrer": "http://google.com",
           "search": "",
@@ -125,7 +124,6 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "__type": "page_ctx",
         "path": "/",
         "referrer": "",
         "search": "",
@@ -139,7 +137,6 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "__type": "page_ctx",
         "path": "/",
         "referrer": "foo",
         "search": "",
@@ -160,6 +157,7 @@ describe('Page Enrichment', () => {
     const ctx = await ajs.track('My Event', {
       name: 'some propery name',
     })
+
     expect(ctx.event.properties!.name).toBe('some propery name')
   })
 
@@ -170,7 +168,6 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "__type": "page_ctx",
         "path": "/",
         "referrer": "",
         "search": "",
@@ -180,7 +177,21 @@ describe('Page Enrichment', () => {
     `)
   })
 
-  test('runs before any other plugin', async () => {
+  test(`there is no ${PAGE_CTX_DISCRIMINANT} property on the final context`, async () => {
+    const events = await Promise.all([
+      ajs.identify('foo'),
+      ajs.track('foo'),
+      ajs.group('foo'),
+      ajs.page('foo'),
+    ]).then((ev) => ev.map((ctx) => [ctx.event.type, ctx] as const))
+    events.forEach(([type, ctx]) => {
+      expect([type, PAGE_CTX_DISCRIMINANT in ctx.event.context!.page!]).toEqual(
+        [type, false]
+      )
+    })
+  })
+
+  test('page context is available to all other plugins', async () => {
     let called = false
 
     await ajs.addSourceMiddleware(({ payload, next }) => {

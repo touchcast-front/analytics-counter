@@ -1,5 +1,5 @@
 import { Analytics } from '../../analytics'
-import { createPageCtx } from '../../../test-helpers/fixtures'
+import { pageCtxFixture } from '../../../test-helpers/fixtures'
 import { sleep } from '../../../lib/sleep'
 
 async function resolveWhen(
@@ -25,7 +25,7 @@ async function resolveWhen(
   })
 }
 const defaultContext = {
-  page: { ...createPageCtx() },
+  page: pageCtxFixture,
 }
 
 const ogLocation = {

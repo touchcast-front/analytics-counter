@@ -7,8 +7,8 @@ import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
+import * as Fixtures from '../../test-helpers/fixtures'
 import { EventQueue } from '../../core/queue/event-queue'
-import { createPageCtx } from '../../test-helpers/fixtures'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -39,7 +39,10 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
-const pageCtxFixture = createPageCtx({ url: 'https://segment.com/' })
+const bufferedPageCtxFixture = {
+  ...Fixtures.bufferedPageCtxFixture,
+  url: 'https://segment.com/',
+}
 
 describe('standalone bundle', () => {
   const segmentDotCom = `foo`
@@ -165,14 +168,14 @@ describe('standalone bundle', () => {
       {
         fruits: ['🍌', '🍇'],
       },
-      pageCtxFixture
+      bufferedPageCtxFixture
     )
     expect(identify).toHaveBeenCalledWith(
       'netto',
       {
         employer: 'segment',
       },
-      pageCtxFixture
+      bufferedPageCtxFixture
     )
 
     expect(page).toHaveBeenCalled()
@@ -284,19 +287,19 @@ describe('standalone bundle', () => {
       {
         fruits: ['🍌', '🍇'],
       },
-      pageCtxFixture
+      bufferedPageCtxFixture
     )
     expect(track).toHaveBeenCalledWith(
       'race conditions',
       { foo: 'bar' },
-      pageCtxFixture
+      bufferedPageCtxFixture
     )
     expect(identify).toHaveBeenCalledWith(
       'netto',
       {
         employer: 'segment',
       },
-      pageCtxFixture
+      bufferedPageCtxFixture
     )
 
     expect(page).toHaveBeenCalled()

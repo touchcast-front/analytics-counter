@@ -3,7 +3,7 @@ import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
 import { createSuccess } from '../../test-helpers/factories'
-import { createPageCtx } from '../../test-helpers/fixtures'
+import { bufferedPageCtxFixture } from '../../test-helpers/fixtures'
 
 jest.mock('unfetch')
 
@@ -13,7 +13,6 @@ const mockFetchSettingsSuccessResponse = () => {
     .mockImplementation(() => createSuccess({ integrations: {} }))
 }
 
-const pageCtxFixture = createPageCtx()
 describe('Lazy initialization', () => {
   let trackSpy: jest.SpiedFunction<Analytics['track']>
   let fetched: jest.MockedFn<typeof unfetch>
@@ -29,7 +28,7 @@ describe('Lazy initialization', () => {
     expect(trackSpy).not.toBeCalled()
     analytics.load({ writeKey: 'abc' })
     await track
-    expect(trackSpy).toBeCalledWith('foo', pageCtxFixture)
+    expect(trackSpy).toBeCalledWith('foo', bufferedPageCtxFixture)
   })
 
   it('.load method return an analytics instance', async () => {
