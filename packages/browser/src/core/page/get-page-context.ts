@@ -1,3 +1,11 @@
+export interface PageContext {
+  path: string
+  referrer: string
+  search: string
+  title: string
+  url: string
+}
+
 /**
  * Represents the PageContext at the moment of event creation.
  *
@@ -5,30 +13,29 @@
  * Given that we use a lot of crazt positional arguments,
  * distinguishing between regular properties objects and this page object can potentially be difficult.
  */
-export interface PageContext {
-  __type?: typeof PAGE_CTX_DISCRIMINANT
-  path: string
-  referrer: string
-  search: string
-  title: string
-  url: string
+export interface BufferedPageContext extends PageContext {
+  __type: typeof PAGE_CTX_DISCRIMINANT
 }
 export const PAGE_CTX_DISCRIMINANT = 'page_ctx'
 
-export function isPageContext(v: unknown): v is PageContext {
+export function isBufferedPageContext(v: unknown): v is BufferedPageContext {
   return (
     typeof v === 'object' &&
     v !== null &&
     '__type' in v &&
-    (v.__type as PageContext['__type']) === PAGE_CTX_DISCRIMINANT
+    (v.__type as BufferedPageContext['__type']) === PAGE_CTX_DISCRIMINANT
   )
 }
 
-/**
- * Get page properties from the browser window/document.
- *
- */
-export function getPageContext(): PageContext {
+export const sanitizePageContext = (
+  pgCtx: BufferedPageContext
+): PageContext => {
+  const copy = { ...pgCtx } as any
+  delete copy.__type
+  return copy
+}
+
+export function createBufferedPageContext(): BufferedPageContext {
   // Note: Any changes to this function should be copy+pasted into the @segment/snippet package!
   // es5-only syntax + methods
   const canonEl = document.querySelector("link[rel='canonical']")
@@ -55,4 +62,11 @@ export function getPageContext(): PageContext {
       return hashIdx === -1 ? url : url.slice(0, hashIdx)
     })(),
   }
+}
+
+/**
+ * Get page properties from the browser window/document.
+ */
+export function createPageContext(): PageContext {
+  return sanitizePageContext(createBufferedPageContext())
 }

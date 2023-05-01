@@ -48,8 +48,8 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
-import { hasPageContextAsLastArg } from '../buffer'
-import { PageContext } from '../page'
+import { hasBufferedPageContextAsLastArg } from '../buffer'
+import { BufferedPageContext, PageContext, sanitizePageContext } from '../page'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -112,9 +112,9 @@ function _stub(this: never) {
 }
 
 const popPageContext = (args: any[]): PageContext | undefined => {
-  if (hasPageContextAsLastArg(args)) {
-    const ctx = args.pop() as PageContext
-    return ctx
+  if (hasBufferedPageContextAsLastArg(args)) {
+    const ctx = args.pop() as BufferedPageContext
+    return sanitizePageContext(ctx)
   }
 }
 

@@ -1,11 +1,11 @@
 import { Analytics } from '../../core/analytics'
 import { pick } from '../../lib/pick'
-import { PageContext } from '../../core/page'
+import { BufferedPageContext } from '../../core/page'
 
 let ajs: Analytics
 
 const helpers = {
-  get pageProps(): PageContext {
+  get pageProps(): BufferedPageContext {
     return {
       url: 'http://foo.com/bar?foo=hello_world',
       path: '/bar',

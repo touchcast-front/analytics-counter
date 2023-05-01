@@ -9,7 +9,7 @@ import {
   SegmentEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
-import { getPageContext, PageContext } from '../page'
+import { createPageContext, PageContext } from '../page'
 import { pick } from '../../lib/pick'
 
 export * from './interfaces'
@@ -204,7 +204,7 @@ export class EventFactory {
     pageCtx: PageContext | undefined
   ): void {
     event.context = event.context || {}
-    const defaultPageContext = getPageContext()
+    const defaultPageContext = createPageContext()
     event.context.page = {
       ...defaultPageContext,
       ...pageCtx,

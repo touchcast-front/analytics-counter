@@ -4,7 +4,11 @@ import { isThenable } from '../../lib/is-thenable'
 import { AnalyticsBrowserCore } from '../analytics/interfaces'
 import { version } from '../../generated/version'
 import { isPlainObject } from '@segment/analytics-core'
-import { getPageContext, isPageContext, PageContext } from '../page'
+import {
+  createBufferedPageContext,
+  isBufferedPageContext,
+  BufferedPageContext,
+} from '../page'
 
 /**
  * The names of any AnalyticsBrowser methods that also exist on Analytics
@@ -82,12 +86,13 @@ export const flushAnalyticsCallsInNewTask = (
   })
 }
 
-export const hasPageContextAsLastArg = (
+export const hasBufferedPageContextAsLastArg = (
   args: unknown[]
-): args is [...unknown[], PageContext] | [PageContext] => {
+): args is [...unknown[], BufferedPageContext] | [BufferedPageContext] => {
   const lastArg = args[args.length - 1]
-  return isPlainObject(lastArg) && isPageContext(lastArg)
+  return isPlainObject(lastArg) && isBufferedPageContext(lastArg)
 }
+
 /**
  *  Represents a buffered method call that occurred before initialization.
  */
@@ -117,14 +122,14 @@ export class PreInitMethodCall<
       ['track', 'screen', 'alias', 'group', 'page', 'identify'] as MethodName[]
     ).includes(method)
     this.args =
-      shouldAddPageContext && !hasPageContextAsLastArg(args)
-        ? [...args, getPageContext()]
+      shouldAddPageContext && !hasBufferedPageContextAsLastArg(args)
+        ? [...args, createBufferedPageContext()]
         : args
   }
 }
 
 export type PreInitMethodParams<MethodName extends PreInitMethodName> =
-  | [...Parameters<Analytics[MethodName]>, PageContext]
+  | [...Parameters<Analytics[MethodName]>, BufferedPageContext]
   | Parameters<Analytics[MethodName]>
 
 /**
