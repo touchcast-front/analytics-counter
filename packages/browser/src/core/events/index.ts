@@ -9,8 +9,7 @@ import {
   SegmentEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
-import { createPageContext, PageContext } from '../page'
-import { pick } from '../../lib/pick'
+import { addPageContext, PageContext } from '../page'
 
 export * from './interfaces'
 
@@ -199,38 +198,6 @@ export class EventFactory {
     return base
   }
 
-  private addEventPageContext(
-    event: SegmentEvent,
-    pageCtx: PageContext | undefined
-  ): void {
-    event.context = event.context || {}
-    const defaultPageContext = createPageContext()
-    event.context.page = {
-      ...defaultPageContext,
-      ...pageCtx,
-      ...event.context.page,
-    }
-
-    if (event.type === 'page') {
-      // if user does "analytics.page('category', 'name', { url: "foo" })"... use the properties as source of truth
-      const pageContextFromEventProps = pick(
-        event.properties,
-        Object.keys(defaultPageContext) as any
-      )
-
-      event.context.page = {
-        ...event.context.page,
-        ...pageContextFromEventProps,
-      }
-
-      event.properties = {
-        ...event.context.page,
-        ...event.properties,
-        ...(event.name ? { name: event.name } : {}),
-      }
-    }
-  }
-
   /**
    * Builds the context part of an event based on "foreign" keys that
    * are provided in the `Options` parameter for an Event
@@ -302,7 +269,7 @@ export class EventFactory {
     // NOTE() This is a solution that was implemented a long time ago to prevent some hash collision issue.
     newEvent.messageId = 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid())
 
-    this.addEventPageContext(newEvent, pageCtx)
+    addPageContext(newEvent, pageCtx)
 
     return newEvent
   }
