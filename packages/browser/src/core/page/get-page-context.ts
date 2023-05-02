@@ -6,6 +6,19 @@ export interface PageContext {
   url: string
 }
 
+// const c = document.querySelector("link[rel='canonical']")
+// return [
+//   document.referrer,
+//   document.title,
+//   window.location.href,
+//   c && c.getAttribute('href'),
+// ]
+export type BufferedPageContext2 = [
+  referrer: string,
+  title: string,
+  url: string,
+  canonical: string
+]
 /**
  * Represents the PageContext at the moment of event creation.
  *
@@ -25,6 +38,35 @@ export function isBufferedPageContext(v: unknown): v is BufferedPageContext {
     '__type' in v &&
     (v.__type as BufferedPageContext['__type']) === PAGE_CTX_DISCRIMINANT
   )
+}
+
+export function isBufferedPageContext2(v: unknown): v is BufferedPageContext2 {
+  return Array.isArray(v) && v.length === 4
+}
+
+export const sanitizePageContext2 = ([
+  referrer,
+  title,
+  urlHref,
+  canonicalPath,
+]: BufferedPageContext2): PageContext => {
+  const _url = new URL(urlHref)
+  const url = _url // do something with canonical
+  const path = (function () {
+    if (!canonicalPath) return window.location.pathname
+    const a = document.createElement('a')
+    a.href = canonicalPath
+    return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
+  })()
+  return {
+    referrer,
+    title,
+    url,
+    path,
+  }
+  // const copy = { ...pgCtx } as any
+  // delete copy.__type
+  // return copy
 }
 
 export const sanitizePageContext = (
