@@ -17,8 +17,51 @@ export type BufferedPageContext2 = [
   referrer: string,
   title: string,
   url: string,
-  canonical: string
+  canonical: string | undefined
 ]
+
+// return [
+//   document.referrer,
+//   document.title,
+//   window.location.href,
+//   c && c.getAttribute('href')
+
+const formatCanonicalUrl = (canonicalPath: string, searchParams: string) => {
+  return canonicalPath.indexOf('?') > -1
+    ? canonicalPath
+    : canonicalPath + searchParams
+}
+
+const formatUrl = (href: string) => {
+  const hashIdx = href.indexOf('#')
+  return hashIdx === -1 ? href : href.slice(0, hashIdx)
+}
+
+const formatCanonicalPath = (canonicalUrl: string) => {
+  const a = document.createElement('a')
+  a.href = canonicalUrl
+  return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
+}
+
+export const sanitizePageContext2 = ([
+  referrer,
+  title,
+  urlHref,
+  canonicalUrl,
+]: BufferedPageContext2): PageContext => {
+  const { pathname, search } = new URL(urlHref)
+  const path = canonicalUrl ? formatCanonicalPath(canonicalUrl) : pathname
+  const url = canonicalUrl
+    ? formatCanonicalUrl(canonicalUrl, urlHref)
+    : formatUrl(urlHref)
+  return {
+    path,
+    referrer,
+    search,
+    title,
+    url,
+  }
+}
 /**
  * Represents the PageContext at the moment of event creation.
  *
@@ -42,31 +85,6 @@ export function isBufferedPageContext(v: unknown): v is BufferedPageContext {
 
 export function isBufferedPageContext2(v: unknown): v is BufferedPageContext2 {
   return Array.isArray(v) && v.length === 4
-}
-
-export const sanitizePageContext2 = ([
-  referrer,
-  title,
-  urlHref,
-  canonicalPath,
-]: BufferedPageContext2): PageContext => {
-  const _url = new URL(urlHref)
-  const url = _url // do something with canonical
-  const path = (function () {
-    if (!canonicalPath) return window.location.pathname
-    const a = document.createElement('a')
-    a.href = canonicalPath
-    return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
-  })()
-  return {
-    referrer,
-    title,
-    url,
-    path,
-  }
-  // const copy = { ...pgCtx } as any
-  // delete copy.__type
-  // return copy
 }
 
 export const sanitizePageContext = (
