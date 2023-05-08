@@ -1,14 +1,28 @@
+export function pick<T extends Record<string, any>, K extends keyof T>(
+  object: T,
+  keys: readonly K[] | K[]
+): Pick<T, K>
+
+export function pick<T extends Record<string, any>>(
+  object: T,
+  keys: string[]
+): Partial<T>
+
 /**
  * @example
  * pick({ 'a': 1, 'b': '2', 'c': 3 }, ['a', 'c'])
  * => { 'a': 1, 'c': 3 }
  */
-export const pick = <T>(object: T, keys: string[]): Partial<T> =>
-  Object.assign(
+export function pick<T extends Record<string, any>>(
+  object: T,
+  keys: string[] | (keyof T)[] | readonly (keyof T)[]
+) {
+  return Object.assign(
     {},
     ...keys.map((key) => {
       if (object && Object.prototype.hasOwnProperty.call(object, key)) {
-        return { [key]: (object as any)[key] }
+        return { [key]: object[key] }
       }
     })
   )
+}

@@ -17,7 +17,7 @@ export function addPageContext(
   if (event.type === 'page') {
     // if user does "analytics.page('category', 'name', { url: "foo" })"... use the properties as source of truth
     const pageContextFromEventProps = pick(
-      event.properties,
+      event.properties || {},
       Object.keys(defaultPageContext) as any
     )
 
