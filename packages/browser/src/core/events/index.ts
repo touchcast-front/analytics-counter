@@ -265,9 +265,8 @@ export class EventFactory {
       context,
       integrations: allIntegrations,
       ...overrides,
+      messageId: 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid()),
     }
-    // NOTE() This is a solution that was implemented a long time ago to prevent some hash collision issue.
-    newEvent.messageId = 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid())
 
     addPageContext(newEvent, pageCtx)
 
