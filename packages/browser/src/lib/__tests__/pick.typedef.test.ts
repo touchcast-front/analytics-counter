@@ -1,27 +1,39 @@
 import { assertNotAny, assertIs } from '../../test-helpers/type-assertions'
 import { pick } from '../pick'
 
-export default () => {
-  // expect: Pick<{
-  //     name: number;
-  // }, "name">
-  const r1 = pick({ name: 123 }, ['name'])
+{
+  // should work with literals
+  const res = pick({ id: 123 }, ['id'])
 
-  assertIs<{ name: number }>(r1)
-  assertNotAny(r1)
+  assertIs<{ id: number }>(res)
+  assertNotAny(res)
+}
+{
+  // should work if only keys are read-only
+  const obj: { id?: number } = {}
+  const res = pick(obj, ['id'] as const)
+  assertNotAny(res)
+  assertIs<{ id?: number }>(res)
 
-  // expect: Partial<{ name: number }>
-  const r2 = pick({ name: 123 }, [] as string[])
-  assertNotAny(r2)
+  // @ts-expect-error
+  assertIs<{ id: number }>(res)
+}
 
-  assertIs<Partial<{ name: number }>>(r2)
+{
+  // should work with keys as string
+  const res = pick({ id: 123 }, [] as string[])
+  assertNotAny(res)
+
+  assertIs<Partial<{ id: number }>>(res)
   // @ts-expect-error - should be partial
-  assertIs<{ name: number }>(r2)
+  assertIs<{ id: number }>(res)
+}
 
-  // expect: Partial<{}>
-  const r3 = pick({}, ['name'])
-  assertNotAny(r3)
-  // @ts-expect-error - should ne empty
-  assertIs<{ name: any }>(r3)
-  assertIs<{}>(r3)
+{
+  // should work with object type
+  const res = pick({} as object, ['id'])
+  assertNotAny(res)
+  assertIs<object>(res)
+  // @ts-expect-error
+  assertIs<{ id: any }>(res)
 }
