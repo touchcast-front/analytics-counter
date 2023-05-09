@@ -13,9 +13,9 @@ export function pick<T extends Record<string, any>>(
  * pick({ 'a': 1, 'b': '2', 'c': 3 }, ['a', 'c'])
  * => { 'a': 1, 'c': 3 }
  */
-export function pick<T extends Record<string, any>>(
+export function pick<T extends Record<string, any>, K extends keyof T>(
   object: T,
-  keys: string[] | (keyof T)[] | readonly (keyof T)[]
+  keys: string[] | K[] | readonly K[]
 ) {
   return Object.assign(
     {},

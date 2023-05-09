@@ -2,16 +2,11 @@ const { getJestModuleMap } = require('./get-module-map')
 const path = require('path')
 
 /**
- * Create Config
- * @param {import('jest').Config} Overrides.
- * @param {object} getJestModuleMap options.
+ * Create a project `jest` config object
+ * @param {import('jest').Config} overrides - Overrides to base project `jest` config.
  * @returns {import('jest').Config}
  */
-const createJestTSConfig = ({
-  modulePathIgnorePatterns,
-  testMatch,
-  ...overridesToMerge
-} = {}) => {
+const createJestTSConfig = (overrides = {}) => {
   const moduleMap = getJestModuleMap()
   return {
     ...(global.JEST_ROOT_CONFIG
@@ -22,20 +17,25 @@ const createJestTSConfig = ({
     preset: 'ts-jest',
     modulePathIgnorePatterns: [
       '<rootDir>/dist/',
-      ...(modulePathIgnorePatterns || []),
+      ...(overrides.modulePathIgnorePatterns || []),
     ],
     testEnvironment: 'node',
-    testMatch: ['**/?(*.)+(test).[jt]s?(x)', ...(testMatch || [])],
+    testMatch: ['**/?(*.)+(test).[jt]s?(x)', ...(overrides.testMatch || [])],
+    testPathIgnorePatterns: [
+      '.*typedef.*',
+      ...(overrides.testPathIgnorePatterns || []),
+    ],
     clearMocks: true,
     globals: {
       'ts-jest': {
         isolatedModules: true,
       },
     },
-    ...(overridesToMerge || {}),
+    ...overrides,
   }
 }
 
 module.exports = {
   createJestTSConfig,
 }
+createJestTSConfig({})
