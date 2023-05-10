@@ -1,4 +1,8 @@
-import { BufferedPageContext, PageContext } from '../../core/page'
+import {
+  BufferedPageContext,
+  createBufferedPageContext,
+  PageContext,
+} from '../../core/page'
 
 export const pageCtxFixture: PageContext = {
   path: '/',
@@ -8,18 +12,13 @@ export const pageCtxFixture: PageContext = {
   url: 'http://localhost/',
 }
 
-type Opts = Partial<{
-  url: string
-  canonical: string
-  title: string
-  referrer: string
-}>
+type Opts = Partial<Parameters<typeof createBufferedPageContext>[0]>
 
-export const bufferedPageCtxFixture = ({
+export const createBufferedPageCtxFixture = ({
   url = 'http://localhost/',
-  canonical = '',
+  canonicalUrl = '',
   title = '',
   referrer = '',
 }: Opts = {}): BufferedPageContext => {
-  return [url, canonical, title, referrer]
+  return createBufferedPageContext({ url, canonicalUrl, title, referrer })
 }

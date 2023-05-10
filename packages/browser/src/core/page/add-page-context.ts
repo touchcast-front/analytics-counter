@@ -1,13 +1,13 @@
 import { pick } from '../../lib/pick'
 import { SegmentEvent } from '../events'
-import { PageContext, createPageContext } from './get-page-context'
+import { PageContext, getDefaultPageContext } from './get-page-context'
 
 export function addPageContext(
   event: SegmentEvent,
   pageCtx: PageContext | undefined
 ): void {
   event.context = event.context || {}
-  const defaultPageContext = createPageContext()
+  const defaultPageContext = getDefaultPageContext()
   event.context.page = {
     ...defaultPageContext,
     ...pageCtx,

@@ -3,7 +3,9 @@ import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
 import { createSuccess } from '../../test-helpers/factories'
-import { bufferedPageCtxFixture } from '../../test-helpers/fixtures'
+import { createBufferedPageCtxFixture } from '../../test-helpers/fixtures'
+
+const bufferedPageCtxFixture = createBufferedPageCtxFixture()
 
 jest.mock('unfetch')
 

@@ -7,8 +7,8 @@ import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
-import * as Fixtures from '../../test-helpers/fixtures'
 import { EventQueue } from '../../core/queue/event-queue'
+import { createBufferedPageCtxFixture } from '../../test-helpers/fixtures'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -39,10 +39,9 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
-const bufferedPageCtxFixture = {
-  ...Fixtures.bufferedPageCtxFixture,
+const bufferedPageCtxFixture = createBufferedPageCtxFixture({
   url: 'https://segment.com/',
-}
+})
 
 describe('standalone bundle', () => {
   const segmentDotCom = `foo`

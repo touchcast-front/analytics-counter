@@ -110,7 +110,7 @@ export function createBufferedPageContext({
   return [url, canonicalUrl, title, referrer]
 }
 
-export const getDefaultPageBufferedPageContext = () => {
+export const getDefaultBufferedPageContext = (): BufferedPageContext => {
   const c = document.querySelector("link[rel='canonical']")
   return createBufferedPageContext({
     url: location.href,
@@ -124,5 +124,5 @@ export const getDefaultPageBufferedPageContext = () => {
  * Get page properties from the browser window/document.
  */
 export function getDefaultPageContext(): PageContext {
-  return createPageContext(getDefaultPageBufferedPageContext())
+  return createPageContext(getDefaultBufferedPageContext())
 }

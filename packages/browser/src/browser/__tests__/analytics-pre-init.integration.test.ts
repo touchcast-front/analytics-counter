@@ -3,13 +3,14 @@ import unfetch from 'unfetch'
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import * as Factory from '../../test-helpers/factories'
-import { bufferedPageCtxFixture } from '../../test-helpers/fixtures'
+import { createBufferedPageCtxFixture } from '../../test-helpers/fixtures'
 import { sleep } from '../../lib/sleep'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { User } from '../../core/user'
 
 jest.mock('unfetch')
 
+const bufferedPageCtxFixture = createBufferedPageCtxFixture()
 const mockFetchSettingsSuccessResponse = () => {
   jest
     .mocked(unfetch)

@@ -7,7 +7,7 @@ import { isPlainObject } from '@segment/analytics-core'
 import {
   isBufferedPageContext,
   BufferedPageContext,
-  getDefaultPageBufferedPageContext,
+  getDefaultBufferedPageContext,
 } from '../page'
 
 /**
@@ -123,7 +123,7 @@ export class PreInitMethodCall<
     ).includes(method)
     this.args =
       shouldAddPageContext && !hasBufferedPageContextAsLastArg(args)
-        ? [...args, getDefaultPageBufferedPageContext()]
+        ? [...args, getDefaultBufferedPageContext()]
         : args
   }
 }

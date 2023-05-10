@@ -52,7 +52,7 @@ describe('trackForm', () => {
   })
 
   it('should have the correct page context', async () => {
-    window.location.search = '?foo=123'
+    window.location.href = 'http://bar.com?foo=123'
     await analytics.trackForm(form, 'foo', {}, { context: { ip: '0.0.0.0' } })
     submit.click()
     console.log(window.location.href)
