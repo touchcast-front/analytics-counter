@@ -5,9 +5,9 @@ import { AnalyticsBrowserCore } from '../analytics/interfaces'
 import { version } from '../../generated/version'
 import { isPlainObject } from '@segment/analytics-core'
 import {
-  createBufferedPageContext,
   isBufferedPageContext,
   BufferedPageContext,
+  getDefaultPageBufferedPageContext,
 } from '../page'
 
 /**
@@ -123,7 +123,7 @@ export class PreInitMethodCall<
     ).includes(method)
     this.args =
       shouldAddPageContext && !hasBufferedPageContextAsLastArg(args)
-        ? [...args, createBufferedPageContext()]
+        ? [...args, getDefaultPageBufferedPageContext()]
         : args
   }
 }

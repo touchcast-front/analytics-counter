@@ -48,7 +48,7 @@ const formatCanonicalPath = (canonicalUrl: string) => {
   return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
 }
 
-export const sanitizePageContext = ([
+export const createPageContext = ([
   urlHref,
   canonicalUrl,
   title,
@@ -96,19 +96,33 @@ export function isBufferedPageContext(v: unknown): v is BufferedPageContext {
   return Array.isArray(v) && v.length === 4
 }
 
-export function createBufferedPageContext(): BufferedPageContext {
+export function createBufferedPageContext({
+  url,
+  canonicalUrl,
+  title,
+  referrer,
+}: {
+  url: string
+  canonicalUrl?: string
+  title: string
+  referrer: string
+}): BufferedPageContext {
+  return [url, canonicalUrl, title, referrer]
+}
+
+export const getDefaultPageBufferedPageContext = () => {
   const c = document.querySelector("link[rel='canonical']")
-  return [
-    location.href,
-    (c && c.getAttribute('href')) || undefined,
-    document.title,
-    document.referrer,
-  ]
+  return createBufferedPageContext({
+    url: location.href,
+    canonicalUrl: (c && c.getAttribute('href')) || undefined,
+    title: document.title,
+    referrer: document.referrer,
+  })
 }
 
 /**
  * Get page properties from the browser window/document.
  */
-export function createPageContext(): PageContext {
-  return sanitizePageContext(createBufferedPageContext())
+export function getDefaultPageContext(): PageContext {
+  return createPageContext(getDefaultPageBufferedPageContext())
 }
