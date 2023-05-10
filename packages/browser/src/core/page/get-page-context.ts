@@ -26,6 +26,21 @@ export type BufferedPageContext2 = [
 //   window.location.href,
 //   c && c.getAttribute('href')
 
+/**
+ * Infer the search params from the URL if the URL includes search parameters
+ * Thus, allows analytics.page({ url: 'https://segment.com/pricing/?ref=nav' }) should not require
+ */
+export const getSearchParams = (page: PageContext): string | undefined => {
+  if (!page) {
+    return
+  }
+  if (page.search) {
+    return page.search
+  } else if (page.url && page.url.indexOf('?') > -1) {
+    return new URL(page.url).search
+  }
+}
+
 const formatCanonicalUrl = (canonicalPath: string, searchParams: string) => {
   return canonicalPath.indexOf('?') > -1
     ? canonicalPath
