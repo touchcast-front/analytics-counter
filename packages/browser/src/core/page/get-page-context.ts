@@ -30,8 +30,8 @@ export type BufferedPageContext2 = [
  * Infer the search params from the URL if the URL includes search parameters
  */
 export const getSearchParams = (
-  search: string,
-  url: string
+  search: string | undefined,
+  url: string | undefined
 ): string | undefined => {
   if (search) {
     return search
