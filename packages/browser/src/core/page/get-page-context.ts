@@ -29,24 +29,27 @@ export type BufferedPageContext2 = [
 /**
  * Infer the search params from the URL if the URL includes search parameters
  */
-export const getSearchParams = (
+export const createSearchParams = (
   search: string | undefined,
   url: string | undefined
-): string | undefined => {
-  if (search) {
+): string => {
+  if (search !== undefined) {
     return search
-  } else if (url && url.indexOf('?') > -1) {
+  } else if (url) {
     return new URL(url).search
+  } else {
+    return ''
   }
 }
 
-const formatCanonicalUrl = (canonicalPath: string, searchParams: string) => {
-  return canonicalPath.indexOf('?') > -1
-    ? canonicalPath
-    : canonicalPath + searchParams
+// why are we appending search parameters to the canonical URL -- like, whyyy would this be a thing?
+const createCanonicalURL = (canonicalUrl: string, searchParams: string) => {
+  return canonicalUrl.indexOf('?') > -1
+    ? canonicalUrl
+    : canonicalUrl + searchParams
 }
 
-const formatUrl = (href: string) => {
+const removeHash = (href: string) => {
   const hashIdx = href.indexOf('#')
   return hashIdx === -1 ? href : href.slice(0, hashIdx)
 }
@@ -54,6 +57,7 @@ const formatUrl = (href: string) => {
 const formatCanonicalPath = (canonicalUrl: string) => {
   const a = document.createElement('a')
   a.href = canonicalUrl
+  // why are we removing a trailing slash from canonical only (???)
   return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
 }
 
@@ -66,8 +70,11 @@ export const sanitizePageContext2 = ([
   const { pathname, search } = new URL(urlHref)
   const path = canonicalUrl ? formatCanonicalPath(canonicalUrl) : pathname
   const url = canonicalUrl
-    ? formatCanonicalUrl(canonicalUrl, urlHref)
-    : formatUrl(urlHref)
+    ? createCanonicalURL(canonicalUrl, search)
+    : removeHash(urlHref)
+  // Why are we removing the anchor here but not the canonical URL? Also, why don't we include hash or any anchor arguments. (???)
+  // There's no way for a customer to get access to hash arguments without overriding url =S
+
   return {
     path,
     referrer,
@@ -113,24 +120,24 @@ export function createBufferedPageContext(): BufferedPageContext {
   // Note: Any changes to this function should be copy+pasted into the @segment/snippet package!
   // es5-only syntax + methods
   const canonEl = document.querySelector("link[rel='canonical']")
-  const canonicalPath = canonEl && canonEl.getAttribute('href')
+  const canonicalUrl = canonEl && canonEl.getAttribute('href')
   const searchParams = location.search
   return {
     __type: 'page_ctx',
     path: (function () {
-      if (!canonicalPath) return window.location.pathname
+      if (!canonicalUrl) return window.location.pathname
       const a = document.createElement('a')
-      a.href = canonicalPath
-      return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
+      a.href = canonicalUrl
+      return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname // WHY are we only removing trailing slashes for canonical URL paths (and not other paths)? Why would this be desirable in the first place
     })(),
     referrer: document.referrer,
     search: searchParams,
     title: document.title,
     url: (function () {
-      if (canonicalPath)
-        return canonicalPath.indexOf('?') > -1
-          ? canonicalPath
-          : canonicalPath + searchParams
+      if (canonicalUrl)
+        return canonicalUrl.indexOf('?') > -1 // WHY are we deciding that canonical URL is not 'canonical enough' so we're just appending search parameters to it -- this is totally unexpected behavior.
+          ? canonicalUrl
+          : canonicalUrl + searchParams
       const url = window.location.href
       const hashIdx = url.indexOf('#')
       return hashIdx === -1 ? url : url.slice(0, hashIdx)
