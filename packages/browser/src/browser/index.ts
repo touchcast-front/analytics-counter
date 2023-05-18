@@ -10,7 +10,11 @@ import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
 import { createDeferred } from '../lib/create-deferred'
 import { pageEnrichment } from '../plugins/page-enrichment'
-import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
+import {
+  PluginFactory,
+  remoteLoader,
+  RemotePlugin
+} from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
 import { validation } from '../plugins/validation'
@@ -154,7 +158,8 @@ async function registerPlugins(
   analytics: Analytics,
   opts: InitOptions,
   options: InitOptions,
-  plugins: Plugin[],
+  plugins: Plugin[] = [],
+  pluginSources: PluginFactory[],
   legacyIntegrationSources: ClassicIntegrationSource[]
 ): Promise<Context> {
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
@@ -204,7 +209,8 @@ async function registerPlugins(
     analytics.integrations,
     mergedSettings,
     options.obfuscate,
-    tsubMiddleware
+    tsubMiddleware,
+    pluginSources
   ).catch(() => [])
 
   const toRegister = [
@@ -278,7 +284,16 @@ async function loadAnalytics(
 
   attachInspector(analytics)
 
-  const plugins = settings.plugins ?? []
+  const plugins = settings.plugins?.filter(
+    (pluginLike) => typeof pluginLike === 'object'
+  ) as Plugin[]
+
+  const pluginSources = settings.plugins?.filter(
+    (pluginLike) =>
+      typeof pluginLike === 'function' &&
+      typeof pluginLike.pluginName === 'string'
+  ) as PluginFactory[]
+
   const classicIntegrations = settings.classicIntegrations ?? []
   Stats.initRemoteMetrics(legacySettings.metrics)
 
@@ -291,6 +306,7 @@ async function loadAnalytics(
     opts,
     options,
     plugins,
+    pluginSources,
     classicIntegrations
   )
 

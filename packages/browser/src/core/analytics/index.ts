@@ -48,6 +48,7 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
+import { PluginFactory } from '../../plugins/remote-loader'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -67,7 +68,7 @@ function createDefaultQueue(retryQueue = false, disablePersistance = false) {
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  plugins?: Plugin[]
+  plugins?: (Plugin | PluginFactory)[]
   classicIntegrations?: ClassicIntegrationSource[]
 }
 
