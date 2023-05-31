@@ -1,0 +1,558 @@
+{
+  "integrations": {
+    "Braze Web Mode (Actions)": {
+      "allowCrawlerActivity": false,
+      "allowUserSuppliedJavascript": false,
+      "api_key": "6ff921c1-e246-45f0-8108-94b3490e7047",
+      "appVersion": "",
+      "automaticallyDisplayMessages": true,
+      "contentSecurityNonce": "",
+      "deferUntilIdentified": false,
+      "devicePropertyAllowlist": "",
+      "disablePushTokenMaintenance": false,
+      "doNotLoadFontAwesome": false,
+      "enableLogging": false,
+      "enableSdkAuthentication": false,
+      "endpoint": "sdk.iad-01.braze.com",
+      "inAppMessageZIndex": 0,
+      "localization": "en",
+      "manageServiceWorkerExternally": false,
+      "minimumIntervalBetweenTriggerActionsInSeconds": 30,
+      "noCookies": false,
+      "openCardsInNewTab": false,
+      "openInAppMessagesInNewTab": false,
+      "requireExplicitInAppMessageDismissal": false,
+      "safariWebsitePushId": "",
+      "sdkVersion": "4.1",
+      "serviceWorkerLocation": "",
+      "sessionTimeoutInSeconds": 1800,
+      "versionSettings": {
+        "componentTypes": []
+      }
+    },
+    "Appboy": {
+      "allowCrawlerActivity": false,
+      "apiKey": "6ff921c1-e246-45f0-8108-94b3490e7047",
+      "automatic_in_app_message_registration_enabled": true,
+      "automaticallyDisplayMessages": true,
+      "customEndpoint": "",
+      "datacenter": "us",
+      "doNotLoadFontAwesome": false,
+      "enableHtmlInAppMessages": false,
+      "enableLogging": false,
+      "localization": "",
+      "logPurchaseWhenRevenuePresent": false,
+      "minimumIntervalBetweenTriggerActionsInSeconds": 30,
+      "onlyTrackKnownUsersOnWeb": false,
+      "openInAppMessagesInNewTab": false,
+      "openNewsFeedCardsInNewTab": false,
+      "requireExplicitInAppMessageDismissal": false,
+      "restCustomEndpoint": "",
+      "safariWebsitePushId": "",
+      "serviceWorkerLocation": "",
+      "sessionTimeoutInSeconds": 30,
+      "trackAllPages": false,
+      "trackNamedPages": false,
+      "updateExistingOnly": false,
+      "version": "",
+      "versionSettings": {
+        "version": "1.16.1",
+        "componentTypes": ["browser", "ios", "android", "server"]
+      },
+      "type": "browser",
+      "bundlingStatus": "bundled"
+    },
+    "Actions Amplitude": {
+      "versionSettings": {
+        "componentTypes": []
+      }
+    },
+    "Fullstory": {
+      "consentSettings": {
+        "categories": ["CAT001"]
+      },
+      "debug": false,
+      "orgId": "o-19KD5E-na1",
+      "recordOnlyThisIFrame": false,
+      "versionSettings": {
+        "componentTypes": []
+      }
+    },
+    "Mixpanel (Actions)": {
+      "versionSettings": {
+        "componentTypes": []
+      }
+    },
+    "Intercom Web (Actions)": {
+      "activator": "#IntercomDefaultWidget",
+      "apiBase": "https://api-iam.intercom.io",
+      "appId": "isz4l58g",
+      "richLinkProperties": "",
+      "versionSettings": {
+        "componentTypes": []
+      }
+    },
+    "Segment.io": {
+      "apiKey": "9lSrez3BlfLAJ7NOChrqWtILiATiycoc",
+      "unbundledIntegrations": [],
+      "addBundledMetadata": true,
+      "maybeBundledConfigIds": {
+        "Fullstory": ["6250a34fe743595e0bdc3d35"],
+        "Braze Web Mode (Actions)": ["640147d8d3758ed91060350e"],
+        "Intercom Web (Actions)": ["6401750bac48b78c03b1e19f"],
+        "Appboy": ["64137e75549501431178fb87"]
+      },
+      "versionSettings": {
+        "version": "4.4.7",
+        "componentTypes": ["browser"]
+      }
+    }
+  },
+  "plan": {
+    "track": {
+      "__default": {
+        "enabled": true,
+        "integrations": {}
+      }
+    },
+    "identify": {
+      "__default": {
+        "enabled": true
+      }
+    },
+    "group": {
+      "__default": {
+        "enabled": true
+      }
+    }
+  },
+  "edgeFunction": {},
+  "analyticsNextEnabled": true,
+  "middlewareSettings": {},
+  "enabledMiddleware": {},
+  "metrics": {
+    "sampleRate": 0.1
+  },
+  "legacyVideoPluginsEnabled": false,
+  "remotePlugins": [
+    {
+      "name": "Amplitude (Actions)",
+      "creationName": "Actions Amplitude",
+      "libraryName": "amplitude-pluginsDestination",
+      "url": "https://cdn.segment.com/next-integrations/actions/amplitude-plugins/90c229b9851d2c04fd70.js",
+      "settings": {
+        "versionSettings": {
+          "componentTypes": []
+        },
+        "subscriptions": [
+          {
+            "id": "tTZyS58iJ6UCqayyoFYfFG",
+            "name": "Browser Session Tracking",
+            "enabled": true,
+            "partnerAction": "sessionId",
+            "subscribe": "type = \"track\" or type = \"identify\" or type = \"group\" or type = \"page\" or type = \"alias\"",
+            "mapping": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "Braze Web Mode (Actions)",
+      "creationName": "Braze Web Mode (Actions)",
+      "libraryName": "brazeDestination",
+      "url": "https://cdn.segment.com/next-integrations/actions/braze/a6f95f5869852b848386.js",
+      "settings": {
+        "allowCrawlerActivity": false,
+        "allowUserSuppliedJavascript": false,
+        "api_key": "6ff921c1-e246-45f0-8108-94b3490e7047",
+        "appVersion": "",
+        "automaticallyDisplayMessages": true,
+        "contentSecurityNonce": "",
+        "deferUntilIdentified": false,
+        "devicePropertyAllowlist": "",
+        "disablePushTokenMaintenance": false,
+        "doNotLoadFontAwesome": false,
+        "enableLogging": false,
+        "enableSdkAuthentication": false,
+        "endpoint": "sdk.iad-01.braze.com",
+        "inAppMessageZIndex": 0,
+        "localization": "en",
+        "manageServiceWorkerExternally": false,
+        "minimumIntervalBetweenTriggerActionsInSeconds": 30,
+        "noCookies": false,
+        "openCardsInNewTab": false,
+        "openInAppMessagesInNewTab": false,
+        "requireExplicitInAppMessageDismissal": false,
+        "safariWebsitePushId": "",
+        "sdkVersion": "4.1",
+        "serviceWorkerLocation": "",
+        "sessionTimeoutInSeconds": 1800,
+        "versionSettings": {
+          "componentTypes": []
+        },
+        "subscriptions": [
+          {
+            "id": "5vaHaYV1Tucjhw9hRYteKY",
+            "name": "Identify Calls",
+            "enabled": true,
+            "partnerAction": "updateUserProfile",
+            "subscribe": "type = \"identify\" or type = \"group\"",
+            "mapping": {
+              "last_name": {
+                "@path": "$.traits.lastName"
+              },
+              "gender": {
+                "@path": "$.traits.gender"
+              },
+              "custom_attributes": {
+                "@path": "$.context.campaign"
+              },
+              "email": {
+                "@path": "$.traits.email"
+              },
+              "image_url": {
+                "@path": "$.traits.avatar"
+              },
+              "external_id": {
+                "@path": "$.userId"
+              },
+              "phone": {
+                "@path": "$.traits.phone"
+              },
+              "first_name": {
+                "@path": "$.traits.firstName"
+              },
+              "home_city": {
+                "@path": "$.traits.address.city"
+              },
+              "country": {
+                "@path": "$.context.location.country"
+              }
+            }
+          },
+          {
+            "id": "JkreutvUWbp2AMxLrbf4U",
+            "name": "Order Completed calls",
+            "enabled": true,
+            "partnerAction": "trackPurchase",
+            "subscribe": "type = \"track\" and event = \"Order Completed\"",
+            "mapping": {
+              "purchaseProperties": {
+                "@path": "$.properties"
+              },
+              "products": {
+                "@path": "$.properties.products"
+              }
+            }
+          },
+          {
+            "id": "eeUF2vN37BTzg1bUTBRTf6",
+            "name": "Track Calls",
+            "enabled": true,
+            "partnerAction": "trackEvent",
+            "subscribe": "type = \"track\" and event != \"Order Completed\"",
+            "mapping": {
+              "eventName": {
+                "@path": "$.event"
+              },
+              "eventProperties": {
+                "@path": "$.properties"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fullstory (Actions)",
+      "creationName": "Fullstory",
+      "libraryName": "fullstoryDestination",
+      "url": "https://cdn.segment.com/next-integrations/actions/fullstory/7f597a805402df2c6be9.js",
+      "settings": {
+        "debug": false,
+        "orgId": "o-19KD5E-na1",
+        "recordOnlyThisIFrame": false,
+        "versionSettings": {
+          "componentTypes": []
+        },
+        "subscriptions": [
+          {
+            "id": "71zRXUSkAPRGY9UReCTuoT",
+            "name": "Track Event",
+            "enabled": true,
+            "partnerAction": "trackEvent",
+            "subscribe": "type = \"track\"",
+            "mapping": {
+              "name": {
+                "@path": "$.event"
+              },
+              "properties": {
+                "@path": "$.properties"
+              }
+            }
+          },
+          {
+            "id": "8iHjGd7ocigXiBZY2kZUKp",
+            "name": "Identify User",
+            "enabled": true,
+            "partnerAction": "identifyUser",
+            "subscribe": "type = \"identify\"",
+            "mapping": {
+              "userId": {
+                "@path": "$.userId"
+              },
+              "displayName": {
+                "@path": "$.traits.name"
+              },
+              "traits": {
+                "@path": "$.traits"
+              },
+              "anonymousId": {
+                "@path": "$.anonymousId"
+              },
+              "email": {
+                "@path": "$.traits.email"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Intercom Web (Actions)",
+      "creationName": "Intercom Web (Actions)",
+      "libraryName": "intercomDestination",
+      "url": "https://cdn.segment.com/next-integrations/actions/intercom/07a0aebd304cba7bf84f.js",
+      "settings": {
+        "activator": "#IntercomDefaultWidget",
+        "apiBase": "https://api-iam.intercom.io",
+        "appId": "isz4l58g",
+        "richLinkProperties": "",
+        "versionSettings": {
+          "componentTypes": []
+        },
+        "subscriptions": [
+          {
+            "id": "cts5X7v286SZE2zvZmF69H",
+            "name": "Identify Company",
+            "enabled": true,
+            "partnerAction": "identifyCompany",
+            "subscribe": "type = \"group\"",
+            "mapping": {
+              "company": {
+                "company_id": {
+                  "@path": "$.groupId"
+                },
+                "name": {
+                  "@path": "$.traits.name"
+                },
+                "created_at": {
+                  "@if": {
+                    "exists": {
+                      "@path": "$.traits.createdAt"
+                    },
+                    "then": {
+                      "@path": "$.traits.createdAt"
+                    },
+                    "else": {
+                      "@path": "$.traits.created_at"
+                    }
+                  }
+                },
+                "plan": {
+                  "@path": "$.traits.plan"
+                },
+                "size": {
+                  "@path": "$.traits.size"
+                },
+                "website": {
+                  "@path": "$.traits.website"
+                },
+                "industry": {
+                  "@path": "$.traits.industry"
+                },
+                "monthly_spend": {
+                  "@path": "$.traits.monthly_spend"
+                }
+              },
+              "hide_default_launcher": {
+                "@if": {
+                  "exists": {
+                    "@path": "$.context.Intercom.hideDefaultLauncher"
+                  },
+                  "then": {
+                    "@path": "$.context.Intercom.hideDefaultLauncher"
+                  },
+                  "else": {
+                    "@path": "$.context.Intercom.hide_default_launcher"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fG89xxkUCEwbXtr3sp6n9A",
+            "name": "Track Event",
+            "enabled": true,
+            "partnerAction": "trackEvent",
+            "subscribe": "type = \"track\"",
+            "mapping": {
+              "currency": {
+                "@path": "$.properties.currency"
+              },
+              "event_metadata": {
+                "@path": "$.context.campaign"
+              },
+              "revenue": {
+                "@path": "$.properties.revenue"
+              },
+              "event_name": {
+                "@path": "$.event"
+              }
+            }
+          },
+          {
+            "id": "vNRCGRqEiGgsyTdzfc6mgw",
+            "name": "Identify User",
+            "enabled": true,
+            "partnerAction": "identifyUser",
+            "subscribe": "type = \"identify\" or type = \"page\"",
+            "mapping": {
+              "company": {
+                "company_id": {
+                  "@path": "$.traits.company.id"
+                },
+                "name": {
+                  "@path": "$.traits.company.name"
+                },
+                "created_at": {
+                  "@if": {
+                    "exists": {
+                      "@path": "$.traits.company.createdAt"
+                    },
+                    "then": {
+                      "@path": "$.traits.company.createdAt"
+                    },
+                    "else": {
+                      "@path": "$.traits.company.created_at"
+                    }
+                  }
+                },
+                "plan": {
+                  "@path": "$.traits.company.plan"
+                },
+                "size": {
+                  "@path": "$.traits.company.size"
+                },
+                "website": {
+                  "@path": "$.traits.company.website"
+                },
+                "industry": {
+                  "@path": "$.traits.company.industry"
+                },
+                "monthly_spend": {
+                  "@path": "$.traits.company.monthly_spend"
+                }
+              },
+              "phone": {
+                "@path": "$.traits.phone"
+              },
+              "avatar_image_url": {
+                "@path": "$.traits.avatar"
+              },
+              "user_id": {
+                "@path": "$.userId"
+              },
+              "name": {
+                "@path": "$.traits.name"
+              },
+              "companies": {
+                "@arrayPath": [
+                  "$.traits.companies",
+                  {
+                    "company_id": {
+                      "@path": "$.id"
+                    },
+                    "name": {
+                      "@path": "$.name"
+                    },
+                    "created_at": {
+                      "@if": {
+                        "exists": {
+                          "@path": "$.createdAt"
+                        },
+                        "then": {
+                          "@path": "$.createdAt"
+                        },
+                        "else": {
+                          "@path": "$.created_at"
+                        }
+                      }
+                    },
+                    "plan": {
+                      "@path": "$.plan"
+                    },
+                    "size": {
+                      "@path": "$.size"
+                    },
+                    "website": {
+                      "@path": "$.website"
+                    },
+                    "industry": {
+                      "@path": "$.industry"
+                    },
+                    "monthly_spend": {
+                      "@path": "$.monthly_spend"
+                    }
+                  }
+                ]
+              },
+              "created_at": {
+                "@if": {
+                  "exists": {
+                    "@path": "$.traits.createdAt"
+                  },
+                  "then": {
+                    "@path": "$.traits.createdAt"
+                  },
+                  "else": {
+                    "@path": "$.traits.created_at"
+                  }
+                }
+              },
+              "hide_default_launcher": {
+                "@if": {
+                  "exists": {
+                    "@path": "$.context.Intercom.hideDefaultLauncher"
+                  },
+                  "then": {
+                    "@path": "$.context.Intercom.hideDefaultLauncher"
+                  },
+                  "else": {
+                    "@path": "$.context.Intercom.hide_default_launcher"
+                  }
+                }
+              },
+              "email": {
+                "@path": "$.traits.email"
+              },
+              "user_hash": {
+                "@if": {
+                  "exists": {
+                    "@path": "$.context.Intercom.user_hash"
+                  },
+                  "then": {
+                    "@path": "$.context.Intercom.user_hash"
+                  },
+                  "else": {
+                    "@path": "$.context.Intercom.userHash"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

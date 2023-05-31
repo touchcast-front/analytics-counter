@@ -316,7 +316,6 @@ async function loadAnalytics(
   if (options.initialPageview) {
     analytics.page().catch(console.error)
   }
-
   await flushFinalBuffer(analytics, preInitBuffer)
 
   return [analytics, ctx]

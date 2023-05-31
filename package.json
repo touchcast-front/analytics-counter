@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "workspaces": [
     "examples/*",
-    "packages/*"
+    "packages/*",
+    "packages/consent/*"
   ],
   "engines": {
     "node": "^16.16.0"
@@ -15,7 +16,7 @@
     "test:check-dts": "yarn build && yarn ts-node meta-tests/check-dts.ts",
     "test:node-int": "turbo run --filter=node-integration-tests test",
     "lint": "yarn constraints && turbo run lint --continue",
-    "build": "turbo run build --filter='./packages/*'",
+    "build": "turbo run build --filter='./packages/**/*'",
     "watch": "turbo run watch --filter='./packages/*'",
     "dev": "yarn workspace @example/with-next-js run dev",
     "postinstall": "husky install",
@@ -29,7 +30,8 @@
     "browser+deps": "turbo run --filter=@segment/analytics-next",
     "node": "yarn workspace @segment/analytics-node",
     "node+deps": "turbo run --filter=@segment/analytics-node",
-    "clean": "bash scripts/clean.sh"
+    "clean": "bash scripts/clean.sh",
+    "turbo": "turbo"
   },
   "packageManager": "yarn@3.4.1",
   "devDependencies": {

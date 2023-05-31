@@ -1,0 +1,26 @@
+{
+  "name": "@example/consent-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "yarn webpack serve",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "@segment/analytics-consent-tools": "workspace:^",
+    "@segment/analytics-next": "workspace:^"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^5.76.0",
+    "webpack-dev-server": "^4.15.0"
+  },
+  "repository": {
+    "directory": "examples/consent-mgr",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  }
+}
