@@ -6,5 +6,5 @@ export type {
   RegisterConsentChanged,
   IntegrationCategoryMappings,
   Categories,
-  Analytics,
+  AnyAnalytics,
 } from './types'

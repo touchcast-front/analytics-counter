@@ -1,19 +1,35 @@
 /**
+ * first argument to AnalyticsBrowser.load
+ */
+export interface Settings {
+  writeKey: string
+  cdnURL?: string
+  cdnSettings?: CDNSettings
+}
+
+/**
+ * 2nd arg to AnalyticsBrowser.load / analytics
+ */
+export interface InitOptions {
+  updateCDNSettings: (cdnSettings: CDNSettings) => CDNSettings
+}
+
+/**
  * This interface is a stub of the actual Segment analytics instance.
  * This can be either:
  * - window.analytics (i.e `AnalyticsSnippet`)
  * - the instance returned by `AnalyticsBrowser.load({...})`
  * - the instance created by `new AnalyticsBrowser(...)`
  */
-export interface Analytics {
+export interface AnyAnalytics {
   addSourceMiddleware: (...args: any[]) => any
+  /**
+   * Either window.analytics.load(...) OR AnalyticsBrowser.load(...)
+   */
   load(
-    /**
-     * window.analytics AND the npm analytics package.
-     */
     writeKeyOrSettings: string | Settings,
     /** See analytics-next function signature for more information. */
-    options?: Record<string, any>
+    options?: InitOptions
   ): any
 }
 
@@ -26,15 +42,8 @@ export interface CDNSettings {
   [key: string]: any
 }
 
-export interface Settings {
-  writeKey: string
-  cdnURL?: string
-  cdnSettings?: CDNSettings
-  [key: string]: any
-}
-
 export interface Wrapper {
-  (analytics: Analytics): void
+  (analytics: AnyAnalytics): void
 }
 
 export interface CreateWrapper {

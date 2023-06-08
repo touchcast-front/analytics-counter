@@ -2,13 +2,10 @@ import {
   Categories,
   CreateWrapper,
   IntegrationCategoryMappings,
-  Analytics,
-  Settings,
-  CDNSettings,
+  AnyAnalytics,
   Integrations,
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
-import { loadLegacySettings } from '@segment/analytics-next'
 import { createConsentStampingMiddleware } from './consent-stamping'
 
 // ./__tests__/create-wrapper.test.ts
@@ -26,7 +23,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     const ogLoad = analytics.load
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    const loadWithConsent: Analytics['load'] = async (
+    const loadWithConsent: AnyAnalytics['load'] = async (
       settings,
       options
     ): Promise<void> => {
@@ -46,40 +43,23 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         createConsentStampingMiddleware(getCategories)
       )
 
-      const normalizedSettings: Settings =
-        typeof settings === 'string' ? { writeKey: settings } : settings
-
       // use these categories to disable the appropriate device mode plugins
       const initialCategories =
         (await shouldLoad?.()) || (await getCategories())
 
       validateCategories(initialCategories)
 
-      const cdnSettings: CDNSettings = normalizedSettings.cdnSettings
-        ? normalizedSettings.cdnSettings
-        : await loadLegacySettings(
-            normalizedSettings.writeKey,
-            normalizedSettings.cdnURL
+      return ogLoad.call(analytics, settings, {
+        updateCDNSettings: (cdnSettings) => {
+          const integrations = buildIntegrationsWithDisabled(
+            cdnSettings.integrations,
+            initialCategories,
+            integrationCategoryMappings
           )
-
-      const integrations = buildIntegrations(
-        cdnSettings.integrations,
-        initialCategories,
-        integrationCategoryMappings
-      )
-
-      return ogLoad.call(
-        analytics,
-        {
-          ...normalizedSettings,
-          cdnSettings: {
-            // TODO: This will not work in the snippet
-            ...cdnSettings,
-            integrations,
-          },
+          const settingsWithOverrides = { ...cdnSettings, integrations }
+          return settingsWithOverrides
         },
-        options
-      )
+      })
     }
     analytics.load = loadWithConsent
   }
@@ -105,7 +85,10 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
   return undefined
 }
 
-const buildIntegrations = (
+/**
+ * Build integrations object, setting some integrations to false
+ */
+const buildIntegrationsWithDisabled = (
   integrations: Integrations,
   consentedCategories: Categories,
   intgCategoryMappings?: IntegrationCategoryMappings

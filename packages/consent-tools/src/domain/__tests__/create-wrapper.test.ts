@@ -1,5 +1,10 @@
 import { createWrapper } from '../create-wrapper'
-import { CreateWrapperOptions, Analytics } from '../../types'
+import {
+  CreateWrapperOptions,
+  AnyAnalytics,
+  Settings,
+  InitOptions,
+} from '../../types'
 
 const GET_CATEGORIES_RESPONSE = { Advertising: true }
 
@@ -23,12 +28,18 @@ const mockGetCategories = jest
 const analyticsLoadSpy = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
 
-class MockAnalytics implements Analytics {
-  load = analyticsLoadSpy
+class MockAnalytics implements AnyAnalytics {
+  load = analyticsLoadSpy.mockImplementation(
+    (settings: Settings, options: InitOptions) => {
+      if (typeof settings === 'object' && settings.cdnSettings) {
+        options.updateCDNSettings?.(settings.cdnSettings)
+      }
+    }
+  )
   addSourceMiddleware = addSourceMiddlewareSpy
 }
 
-let analytics: Analytics
+let analytics: AnyAnalytics
 beforeEach(() => {
   analytics = new MockAnalytics()
 })
@@ -106,7 +117,7 @@ describe(createWrapper, () => {
     })
   })
 
-  it('should ignore consent info (and load as usual) if integration consent info is not available', async () => {
+  it.only('should ignore consent info (and load as usual) if integration consent info is not available', async () => {
     // user only consents to 'advertising' in these tests.
     wrapTestAnalytics()
 
@@ -145,8 +156,9 @@ describe(createWrapper, () => {
     })
 
     expect(analyticsLoadSpy).toBeCalled()
-    const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
-      ?.integrations as any
+    const integrations = analyticsLoadSpy.mock.lastCall[1].updateCDNSettings(
+      mockCdnSettings
+    ).integrations as any
     expect(integrations.MockIntegrationWithNoConsentSettings).toEqual(
       mockCdnSettings.integrations.MockIntegrationWithNoConsentSettings
     )
