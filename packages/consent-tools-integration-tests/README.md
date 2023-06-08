@@ -13,15 +13,6 @@ Browser targets:
 
 ## Running tests
 
-1. Build dependencies and start local server
-
-```sh
-yarn browser-destinations:build &&
-yarn start-destination-server
-```
-
-Run tests
-
 ```sh
 yarn run test
 ```
