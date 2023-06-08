@@ -5,7 +5,7 @@ type CreateConsentMw = (
 ) => AnyAnalytics['addSourceMiddleware']
 
 /**
- * Create analytics addSourceMiddleware fn that stamps each
+ * Create analytics addSourceMiddleware fn that stamps each event
  */
 export const createConsentStampingMiddleware: CreateConsentMw =
   (getCategories) =>
