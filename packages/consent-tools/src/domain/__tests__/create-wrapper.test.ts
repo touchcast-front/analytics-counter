@@ -8,7 +8,7 @@ import {
 
 const GET_CATEGORIES_RESPONSE = { Advertising: true }
 
-const DEFAULT_LOAD_OPTS = {
+const DEFAULT_LOAD_SETTINGS = {
   writeKey: 'foo',
   cdnSettings: { integrations: {} },
 }
@@ -28,6 +28,17 @@ const mockGetCategories = jest
 const analyticsLoadSpy = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
 
+const getAnalyticsLoadLastCall = () => {
+  const [arg1, arg2] = analyticsLoadSpy.mock.lastCall
+  return {
+    args: analyticsLoadSpy.mock.lastCall,
+    cdnSettings: arg1.cdnSettings,
+    updateCDNSettings: arg2.updateCDNSettings,
+  }
+}
+const getLoadSpyIntegrations = (cdnSettings: any) =>
+  getAnalyticsLoadLastCall().updateCDNSettings(cdnSettings).integrations as any
+
 class MockAnalytics implements AnyAnalytics {
   load = analyticsLoadSpy
   addSourceMiddleware = addSourceMiddlewareSpy
@@ -44,10 +55,6 @@ const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
     ...overrides,
   })(analytics)
 
-const getLoadSpyIntegrations = (cdnSettings: any) =>
-  analyticsLoadSpy.mock.lastCall[1].updateCDNSettings(cdnSettings)
-    .integrations as any
-
 describe(createWrapper, () => {
   it('should wait for shouldLoad() to resolve/return before calling analytics.load()', async () => {
     const shouldLoadMock: jest.Mock<undefined> = jest
@@ -58,7 +65,7 @@ describe(createWrapper, () => {
       shouldLoad: shouldLoadMock,
     })
 
-    const loaded = analytics.load(DEFAULT_LOAD_OPTS)
+    const loaded = analytics.load(DEFAULT_LOAD_SETTINGS)
     expect(analyticsLoadSpy).not.toHaveBeenCalled()
     expect(shouldLoadMock).toBeCalled()
     await loaded
@@ -71,7 +78,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => Promise.resolve(GET_CATEGORIES_RESPONSE),
         })
-        await analytics.load(DEFAULT_LOAD_OPTS)
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(analyticsLoadSpy).toBeCalled()
         expect(mockGetCategories).not.toBeCalled()
       })
@@ -80,7 +87,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => GET_CATEGORIES_RESPONSE,
         })
-        await analytics.load(DEFAULT_LOAD_OPTS)
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(analyticsLoadSpy).toBeCalled()
         expect(mockGetCategories).not.toBeCalled()
       })
@@ -88,14 +95,14 @@ describe(createWrapper, () => {
 
     it('should call getCategories() if shouldLoad() option returns nil', async () => {
       wrapTestAnalytics({ shouldLoad: () => undefined })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
       expect(mockGetCategories).toBeCalled()
     })
 
     it('should call getCategories() if shouldLoad() option returns empty promise', async () => {
       wrapTestAnalytics({ shouldLoad: () => Promise.resolve(undefined) })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
       expect(mockGetCategories).toBeCalled()
     })
@@ -107,7 +114,7 @@ describe(createWrapper, () => {
         shouldLoad: () => Promise.resolve('sup' as any),
       })
       try {
-        await analytics.load(DEFAULT_LOAD_OPTS)
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
         throw Error('Test fail')
       } catch (err: any) {
         expect(err.message).toMatch(/validation/i)
@@ -133,7 +140,7 @@ describe(createWrapper, () => {
     }
 
     await analytics.load({
-      ...DEFAULT_LOAD_OPTS,
+      ...DEFAULT_LOAD_SETTINGS,
       cdnSettings: mockCdnSettings,
     })
 
@@ -172,7 +179,7 @@ describe(createWrapper, () => {
     }
 
     await analytics.load({
-      ...DEFAULT_LOAD_OPTS,
+      ...DEFAULT_LOAD_SETTINGS,
       cdnSettings: mockCdnSettings,
     })
 
@@ -198,7 +205,7 @@ describe(createWrapper, () => {
       getCategories: () => GET_CATEGORIES_RESPONSE,
     })
     await analytics.load({
-      ...DEFAULT_LOAD_OPTS,
+      ...DEFAULT_LOAD_SETTINGS,
       cdnSettings: mockCdnSettings,
     })
     expect(analyticsLoadSpy).toBeCalled()
@@ -225,7 +232,7 @@ describe(createWrapper, () => {
       shouldLoad: () => ({ Foo: true, Bar: true }),
     })
     await analytics.load({
-      ...DEFAULT_LOAD_OPTS,
+      ...DEFAULT_LOAD_SETTINGS,
       cdnSettings: mockCdnSettings,
     })
     expect(analyticsLoadSpy).toBeCalled()
@@ -249,7 +256,7 @@ describe(createWrapper, () => {
       shouldLoad: () => ({ Foo: true }),
     })
     await analytics.load({
-      ...DEFAULT_LOAD_OPTS,
+      ...DEFAULT_LOAD_SETTINGS,
       cdnSettings: mockCdnSettings,
     })
 
@@ -260,16 +267,16 @@ describe(createWrapper, () => {
 
   it('should invoke addSourceMiddleware in order to stamp the event', async () => {
     wrapTestAnalytics()
-    await analytics.load(DEFAULT_LOAD_OPTS)
+    await analytics.load(DEFAULT_LOAD_SETTINGS)
     expect(addSourceMiddlewareSpy).toBeCalledWith(expect.any(Function))
   })
 
   describe('disableConsentRequirement', () => {
-    it('should load analytics as usual if disableConsentRequirement ', async () => {
+    it('should load analytics as usual', async () => {
       wrapTestAnalytics({
         disableConsentRequirement: () => true,
       })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
     })
 
@@ -279,11 +286,11 @@ describe(createWrapper, () => {
         disableConsentRequirement: () => true,
         shouldLoad,
       })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(shouldLoad).not.toBeCalled()
     })
 
-    it('should not set cdn settings', async () => {
+    it('should pass all arguments directly to the actual analytics.load instance', async () => {
       const mockCdnSettings = {
         integrations: {
           mockIntegration: {
@@ -295,23 +302,26 @@ describe(createWrapper, () => {
         disableConsentRequirement: () => true,
         getCategories: () => ({ Foo: false }),
       })
-      await analytics.load({
-        ...DEFAULT_LOAD_OPTS,
-        cdnSettings: mockCdnSettings,
-      })
-      const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
-        ?.integrations as any
-      // should not alter cdn settings
-      expect(integrations.mockIntegration).toEqual(
-        mockCdnSettings.integrations.mockIntegration
-      )
+
+      const loadArgs: [any, any] = [
+        {
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        },
+        {
+          retryQueue: false,
+        },
+      ]
+      await analytics.load(...loadArgs)
+      expect(analyticsLoadSpy).toBeCalled()
+      expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
     })
 
     it('should not stamp the event with consent info', async () => {
       wrapTestAnalytics({
         disableConsentRequirement: () => true,
       })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(addSourceMiddlewareSpy).not.toBeCalled()
     })
   })
@@ -321,7 +331,7 @@ describe(createWrapper, () => {
       wrapTestAnalytics({
         disableAll: () => false,
       })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
     })
 
@@ -329,7 +339,7 @@ describe(createWrapper, () => {
       wrapTestAnalytics({
         disableAll: () => true,
       })
-      await analytics.load(DEFAULT_LOAD_OPTS)
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).not.toBeCalled()
     })
   })
