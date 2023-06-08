@@ -3,7 +3,7 @@ import { expect } from 'expect'
 import { Context } from '@segment/analytics-next'
 
 it('should stamp each event', async () => {
-  await page.load()
+  await page.loadIndex()
 
   const commands = [
     `analytics.track("hello world")`,
