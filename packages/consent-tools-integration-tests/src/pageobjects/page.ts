@@ -14,7 +14,7 @@ class Page {
     assert(baseURL)
     await waitUntilReady()
 
-    await browser.url(baseURL + page)
+    await browser.url(baseURL + '/' + page)
   }
 }
 
