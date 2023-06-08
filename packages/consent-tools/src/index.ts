@@ -1,5 +1,5 @@
 export { createWrapper } from './domain/create-wrapper'
-export {
+export type {
   Wrapper,
   CreateWrapper,
   CreateWrapperOptions,
