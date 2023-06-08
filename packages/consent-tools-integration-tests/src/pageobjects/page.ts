@@ -1,4 +1,5 @@
 import assert from 'assert'
+
 const waitUntilReady = () =>
   browser.waitUntil(
     () => browser.execute(() => document.readyState === 'complete'),
@@ -8,20 +9,12 @@ const waitUntilReady = () =>
   )
 
 class Page {
-  async loadIndex(): Promise<void> {
+  async load(page: string): Promise<void> {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
     await waitUntilReady()
 
-    await browser.url(baseURL)
-  }
-
-  async loadOneTrust(): Promise<void> {
-    const baseURL = browser.options.baseUrl
-    assert(baseURL)
-    await waitUntilReady()
-
-    await browser.url(baseURL + '/onetrust.html')
+    await browser.url(baseURL + page)
   }
 }
 
