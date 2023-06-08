@@ -8,7 +8,10 @@
 export interface Analytics {
   addSourceMiddleware: (...args: any[]) => any
   load: (
-    settingsOrWritekey: string | Settings,
+    /**
+     * Handles both fn signatures: window.analytics or the npm analytics package.
+     */
+    writeKeyOrSettings: string | Settings,
     /** See analytics-next function signature for more information. */
     options?: Record<string, any>
   ) => any
