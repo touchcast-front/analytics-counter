@@ -24,8 +24,7 @@
   },
   "devDependencies": {
     "@internal/config": "0.0.0",
-    "@segment/analytics-next": "workspace:^",
-    "@testing-library/dom": "^9.3.0"
+    "@segment/analytics-next": "workspace:^"
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",

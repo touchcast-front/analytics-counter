@@ -1,6 +1,5 @@
 import { createWrapper } from '../create-wrapper'
 import { CreateWrapperOptions, Analytics } from '../../types'
-import { waitFor } from '@testing-library/dom'
 
 const GET_CATEGORIES_RESPONSE = { Advertising: true }
 
@@ -50,10 +49,11 @@ describe(createWrapper, () => {
       shouldLoad: shouldLoadMock,
     })
 
-    analytics.load(DEFAULT_LOAD_OPTS)
+    const loaded = analytics.load(DEFAULT_LOAD_OPTS)
     expect(analyticsLoadSpy).not.toHaveBeenCalled()
     expect(shouldLoadMock).toBeCalled()
-    await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+    await loaded
+    expect(analyticsLoadSpy).toBeCalled()
   })
 
   describe('Fetching initial categories', () => {
@@ -62,8 +62,8 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => Promise.resolve(GET_CATEGORIES_RESPONSE),
         })
-        analytics.load(DEFAULT_LOAD_OPTS)
-        await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+        await analytics.load(DEFAULT_LOAD_OPTS)
+        expect(analyticsLoadSpy).toBeCalled()
         expect(mockGetCategories).not.toBeCalled()
       })
 
@@ -71,23 +71,23 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => GET_CATEGORIES_RESPONSE,
         })
-        analytics.load(DEFAULT_LOAD_OPTS)
-        await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+        await analytics.load(DEFAULT_LOAD_OPTS)
+        expect(analyticsLoadSpy).toBeCalled()
         expect(mockGetCategories).not.toBeCalled()
       })
     })
 
     it('should call getCategories() if shouldLoad() option returns nil', async () => {
       wrapTestAnalytics({ shouldLoad: () => undefined })
-      analytics.load(DEFAULT_LOAD_OPTS)
-      await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(analyticsLoadSpy).toBeCalled()
       expect(mockGetCategories).toBeCalled()
     })
 
     it('should call getCategories() if shouldLoad() option returns empty promise', async () => {
       wrapTestAnalytics({ shouldLoad: () => Promise.resolve(undefined) })
-      analytics.load(DEFAULT_LOAD_OPTS)
-      await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(analyticsLoadSpy).toBeCalled()
       expect(mockGetCategories).toBeCalled()
     })
   })
@@ -139,12 +139,12 @@ describe(createWrapper, () => {
       },
     }
 
-    analytics.load({
+    await analytics.load({
       ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
 
-    await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+    expect(analyticsLoadSpy).toBeCalled()
     const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
       ?.integrations as any
     expect(integrations.MockIntegrationWithNoConsentSettings).toEqual(
@@ -180,11 +180,11 @@ describe(createWrapper, () => {
     wrapTestAnalytics({
       shouldLoad: () => ({ Foo: true, Bar: true }),
     })
-    analytics.load({
+    await analytics.load({
       ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
-    await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+    expect(analyticsLoadSpy).toBeCalled()
     const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
       ?.integrations as any
     expect(integrations.nope).toBeFalsy()
@@ -207,11 +207,12 @@ describe(createWrapper, () => {
     wrapTestAnalytics({
       shouldLoad: () => ({ Foo: true }),
     })
-    analytics.load({
+    await analytics.load({
       ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
-    await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+
+    expect(analyticsLoadSpy).toBeCalled()
     const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
       ?.integrations as any
     expect(integrations.justForFun).toBeTruthy()
@@ -223,8 +224,8 @@ describe(createWrapper, () => {
       wrapTestAnalytics({
         disableAll: () => false,
       })
-      analytics.load(DEFAULT_LOAD_OPTS)
-      await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(analyticsLoadSpy).toBeCalled()
     })
 
     it('should not load analytics if disableAll returns true', async () => {
