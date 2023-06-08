@@ -9,7 +9,7 @@
     "build": "webpack",
     "watch": "yarn build --watch",
     "build:with-deps": "yarn run -T turbo run --filter='./packages/consent*' build",
-    "test": "yarn test:local",
+    "test": "yarn build && yarn test:local",
     "test:local": "wdio wdio.conf.local.ts",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "eslint": "yarn run -T eslint",

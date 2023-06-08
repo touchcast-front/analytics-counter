@@ -8,7 +8,7 @@ const config = {
   devtool: 'source-map',
   entry: {
     index: {
-      import: path.resolve(__dirname, 'src/fixtures/my-wrapper/index.ts'),
+      import: path.resolve(__dirname, 'src/fixtures/basic/index.ts'),
     },
   },
   output: {
