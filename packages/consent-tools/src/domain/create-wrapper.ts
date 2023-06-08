@@ -2,7 +2,7 @@ import {
   Categories,
   CreateWrapper,
   IntegrationCategoryMappings,
-  AnyAnalytics,
+  Analytics,
   Settings,
   CDNSettings,
   Integrations,
@@ -19,7 +19,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     shouldLoad,
     integrationCategoryMappings,
   } = createWrapperOptions
-  return ({ analytics }) => {
+  return (analytics) => {
     validateGetCategories(getCategories)
 
     const ogLoad = analytics.load
@@ -33,7 +33,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     })
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    const loadWithConsent: AnyAnalytics['load'] = async (
+    const loadWithConsent: Analytics['load'] = async (
       settings,
       options
     ): Promise<void> => {

@@ -1,4 +1,4 @@
-export interface AnyAnalytics {
+export interface Analytics {
   addSourceMiddleware: (...args: any[]) => any
   load: (settingsOrWritekey: string | Settings, options: any) => any
 }
@@ -17,19 +17,8 @@ export interface Settings {
   cdnSettings?: CDNSettings
 }
 
-export interface EnhancerOptions {
-  /**
-   * The Segment analytics instance.
-   * This can be either:
-   * - window.analytics (i.e `AnalyticsSnippet`)
-   * - the instance returned by `AnalyticsBrowser.load({...})`
-   * - the instance created by `new AnalyticsBrowser(...)`
-   */
-  analytics: AnyAnalytics
-}
-
 export interface Wrapper {
-  (options: EnhancerOptions): void
+  (analytics: Analytics): void
 }
 
 export interface CreateWrapper {

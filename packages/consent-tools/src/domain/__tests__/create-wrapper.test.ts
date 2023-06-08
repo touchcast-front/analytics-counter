@@ -57,9 +57,7 @@ const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
   createWrapper({
     getCategories: mockGetCategories,
     ...overrides,
-  })({
-    analytics,
-  })
+  })(analytics)
 
 describe(createWrapper, () => {
   it('should wait for shouldLoad() to resolve/return before calling analytics.load()', async () => {
