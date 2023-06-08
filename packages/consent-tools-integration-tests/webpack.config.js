@@ -22,6 +22,7 @@ const config = {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'public/dist'),
     chunkFilename: '[name].chunk.js',
+    clean: true,
   },
   target: ['web', 'es5'],
   module: {
