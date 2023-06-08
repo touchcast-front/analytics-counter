@@ -1,1 +1,1 @@
-console.log('hello')
+import {} from '@segment/consent-wrapper-onetrust'
