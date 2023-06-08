@@ -1,6 +1,17 @@
+/**
+ * This interface is a stub of the actual Segment analytics instance.
+ * This can be either:
+ * - window.analytics (i.e `AnalyticsSnippet`)
+ * - the instance returned by `AnalyticsBrowser.load({...})`
+ * - the instance created by `new AnalyticsBrowser(...)`
+ */
 export interface Analytics {
   addSourceMiddleware: (...args: any[]) => any
-  load: (settingsOrWritekey: string | Settings, options: any) => any
+  load: (
+    settingsOrWritekey: string | Settings,
+    /** See analytics-next function signature for more information. */
+    options?: Record<string, any>
+  ) => any
 }
 
 export interface Integrations {

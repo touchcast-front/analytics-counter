@@ -1,8 +1,7 @@
 import { createWrapper } from '../create-wrapper'
-import { AnalyticsBrowser } from '@segment/analytics-next'
 import { CreateWrapperOptions } from '../../types'
-import nock from 'nock'
 import { waitFor } from '@testing-library/dom'
+import type { Analytics } from '../../types'
 
 const fixtures = {
   GET_CATEGORIES_RESPONSE: { Advertising: true },
@@ -18,40 +17,27 @@ const createConsentSettings = (categories: string[] = []) => ({
   },
 })
 
-nock.disableNetConnect()
-nock(/cdn.segment.com/)
-  .get(/.*/)
-  .reply(200, {
-    integrations: {
-      mockIntegration: {
-        foo: 123,
-        ...createConsentSettings(['Advertising']),
-      },
-      'Segment.io': {
-        bar: 123,
-      },
-    },
-  })
-  .persist()
-
-nock(/api.segment.io/)
-  .post(/.*/)
-  .reply(201, { success: true })
-  .persist()
-
 const mockGetCategories = jest
   .fn()
   .mockImplementation(() => fixtures.GET_CATEGORIES_RESPONSE)
 
-let analytics: AnalyticsBrowser
-let analyticsLoadSpy: jest.SpiedFunction<AnalyticsBrowser['load']>
+const analyticsLoadSpy = jest.fn()
+const addSourceMiddlewareSpy = jest.fn()
 
+class MockAnalytics implements Analytics {
+  load = analyticsLoadSpy
+  addSourceMiddleware = addSourceMiddlewareSpy
+}
+
+let analytics: Analytics
 beforeEach(() => {
-  analyticsLoadSpy = jest
-    .spyOn(AnalyticsBrowser.prototype, 'load')
-    .mockImplementation(() => analytics)
-  analytics = new AnalyticsBrowser()
+  analytics = new MockAnalytics()
 })
+
+const DEFAULT_LOAD_OPTS = {
+  writeKey: 'foo',
+  cdnSettings: { integrations: {} },
+}
 
 const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
   createWrapper({
@@ -69,9 +55,7 @@ describe(createWrapper, () => {
       shouldLoad: shouldLoadMock,
     })
 
-    analytics.load({
-      writeKey: fixtures.WRITEKEY,
-    })
+    analytics.load(DEFAULT_LOAD_OPTS)
     expect(analyticsLoadSpy).not.toHaveBeenCalled()
     expect(shouldLoadMock).toBeCalled()
     await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
@@ -83,7 +67,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => Promise.resolve(fixtures.GET_CATEGORIES_RESPONSE),
         })
-        analytics.load({ writeKey: fixtures.WRITEKEY })
+        analytics.load(DEFAULT_LOAD_OPTS)
         await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
         expect(mockGetCategories).not.toBeCalled()
       })
@@ -92,7 +76,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoad: () => fixtures.GET_CATEGORIES_RESPONSE,
         })
-        analytics.load({ writeKey: fixtures.WRITEKEY })
+        analytics.load(DEFAULT_LOAD_OPTS)
         await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
         expect(mockGetCategories).not.toBeCalled()
       })
@@ -100,14 +84,14 @@ describe(createWrapper, () => {
 
     it('should call getCategories() if shouldLoad() option returns nil', async () => {
       wrapTestAnalytics({ shouldLoad: () => undefined })
-      analytics.load({ writeKey: fixtures.WRITEKEY })
+      analytics.load(DEFAULT_LOAD_OPTS)
       await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
       expect(mockGetCategories).toBeCalled()
     })
 
     it('should call getCategories() if shouldLoad() option returns empty promise', async () => {
       wrapTestAnalytics({ shouldLoad: () => Promise.resolve(undefined) })
-      analytics.load({ writeKey: fixtures.WRITEKEY })
+      analytics.load(DEFAULT_LOAD_OPTS)
       await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
       expect(mockGetCategories).toBeCalled()
     })
@@ -119,7 +103,7 @@ describe(createWrapper, () => {
         shouldLoad: () => Promise.resolve('sup' as any),
       })
       try {
-        await analytics.load({ writeKey: fixtures.WRITEKEY })
+        await analytics.load(DEFAULT_LOAD_OPTS)
         throw Error('Test fail')
       } catch (err: any) {
         expect(err.message).toMatch(/validation/i)
@@ -161,7 +145,7 @@ describe(createWrapper, () => {
     }
 
     analytics.load({
-      writeKey: fixtures.WRITEKEY,
+      ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
 
@@ -202,7 +186,7 @@ describe(createWrapper, () => {
       shouldLoad: () => ({ Foo: true, Bar: true }),
     })
     analytics.load({
-      writeKey: fixtures.WRITEKEY,
+      ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
     await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
@@ -229,7 +213,7 @@ describe(createWrapper, () => {
       shouldLoad: () => ({ Foo: true }),
     })
     analytics.load({
-      writeKey: fixtures.WRITEKEY,
+      ...DEFAULT_LOAD_OPTS,
       cdnSettings: mockCdnSettings,
     })
     await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
@@ -244,9 +228,7 @@ describe(createWrapper, () => {
       wrapTestAnalytics({
         disableAll: () => false,
       })
-      analytics.load({
-        writeKey: fixtures.WRITEKEY,
-      })
+      analytics.load(DEFAULT_LOAD_OPTS)
       await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
     })
 
@@ -254,9 +236,7 @@ describe(createWrapper, () => {
       wrapTestAnalytics({
         disableAll: () => true,
       })
-      await analytics.load({
-        writeKey: fixtures.WRITEKEY,
-      })
+      await analytics.load(DEFAULT_LOAD_OPTS)
       expect(analyticsLoadSpy).not.toBeCalled()
     })
   })
