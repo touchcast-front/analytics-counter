@@ -15,11 +15,11 @@ const entries = files.reduce((acc, file) => {
 
 /** @type { import('webpack').Configuration } */
 const config = {
-  mode: process.env.NODE_ENV || 'development',
+  mode: 'development',
   devtool: 'source-map',
   entry: entries,
   output: {
-    filename: '[name].js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'public/dist'),
     chunkFilename: '[name].chunk.js',
   },
