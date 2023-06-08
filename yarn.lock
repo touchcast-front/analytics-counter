@@ -1052,6 +1052,7 @@ __metadata:
     "@wdio/static-server-service": ^8.10.6
     "@wdio/types": 8
     expect: ^29.4.1
+    globby: ^11.0.2
     wdio-intercept-service: ^4.4.0
     webpack: ^5.76.0
   languageName: unknown
@@ -9508,7 +9509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:^11.0.0, globby@npm:^11.1.0":
+"globby@npm:^11.0.0, globby@npm:^11.0.2, globby@npm:^11.1.0":
   version: 11.1.0
   resolution: "globby@npm:11.1.0"
   dependencies:
