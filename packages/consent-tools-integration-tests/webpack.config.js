@@ -15,6 +15,12 @@ const entries = files.reduce((acc, file) => {
 
 /** @type { import('webpack').Configuration } */
 const config = {
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'public'),
+    },
+    port: 9000,
+  },
   mode: 'development',
   devtool: 'source-map',
   entry: entries,
@@ -43,12 +49,6 @@ const config = {
   },
   resolve: {
     extensions: ['.ts', '.js'],
-  },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'public'),
-    },
-    port: 9000,
   },
 }
 
