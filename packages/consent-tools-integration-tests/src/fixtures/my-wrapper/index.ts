@@ -5,6 +5,6 @@ export const analytics = new AnalyticsBrowser()
 ;(window as any).analytics = analytics
 console.log('hello')
 
-wrap({ analytics })
+wrap(analytics)
 
 analytics.load({ writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc' })

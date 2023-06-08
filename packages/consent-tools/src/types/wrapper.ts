@@ -7,14 +7,14 @@
  */
 export interface Analytics {
   addSourceMiddleware: (...args: any[]) => any
-  load: (
+  load(
     /**
-     * Handles both fn signatures: window.analytics or the npm analytics package.
+     * window.analytics AND the npm analytics package.
      */
     writeKeyOrSettings: string | Settings,
     /** See analytics-next function signature for more information. */
     options?: Record<string, any>
-  ) => any
+  ): any
 }
 
 export interface Integrations {
@@ -23,12 +23,14 @@ export interface Integrations {
 
 export interface CDNSettings {
   integrations: Integrations
+  [key: string]: any
 }
 
 export interface Settings {
   writeKey: string
   cdnURL?: string
   cdnSettings?: CDNSettings
+  [key: string]: any
 }
 
 export interface Wrapper {
