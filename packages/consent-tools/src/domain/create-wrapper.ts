@@ -9,7 +9,7 @@ import {
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
 import { loadLegacySettings } from '@segment/analytics-next'
-import { createConsentPrefStampMiddleware } from './stamp'
+import { createConsentStampingMiddleware } from './consent-stamping'
 
 // ./__tests__/create-wrapper.test.ts
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
@@ -43,7 +43,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentPrefStampMiddleware(getCategories)
+        createConsentStampingMiddleware(getCategories)
       )
 
       const normalizedSettings: Settings =

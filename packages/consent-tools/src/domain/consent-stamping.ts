@@ -1,6 +1,6 @@
 import { CreateWrapperOptions } from '../types'
 
-export const createConsentPrefStampMiddleware =
+export const createConsentStampingMiddleware =
   (getCategories: CreateWrapperOptions['getCategories']) =>
   async ({ payload, next }: any) => {
     payload.obj.context.consent = {
