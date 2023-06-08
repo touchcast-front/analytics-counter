@@ -1,13 +1,13 @@
 import { createWrapper } from '../create-wrapper'
-import { CreateWrapperOptions } from '../../types'
+import { CreateWrapperOptions, Analytics } from '../../types'
 import { waitFor } from '@testing-library/dom'
-import type { Analytics } from '../../types'
 
-const fixtures = {
-  GET_CATEGORIES_RESPONSE: { Advertising: true },
-  WRITEKEY: 'FOO',
+const GET_CATEGORIES_RESPONSE = { Advertising: true }
+
+const DEFAULT_LOAD_OPTS = {
+  writeKey: 'foo',
+  cdnSettings: { integrations: {} },
 }
-
 /**
  * Create consent settings for integrations
  */
@@ -19,7 +19,7 @@ const createConsentSettings = (categories: string[] = []) => ({
 
 const mockGetCategories = jest
   .fn()
-  .mockImplementation(() => fixtures.GET_CATEGORIES_RESPONSE)
+  .mockImplementation(() => GET_CATEGORIES_RESPONSE)
 
 const analyticsLoadSpy = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
@@ -33,11 +33,6 @@ let analytics: Analytics
 beforeEach(() => {
   analytics = new MockAnalytics()
 })
-
-const DEFAULT_LOAD_OPTS = {
-  writeKey: 'foo',
-  cdnSettings: { integrations: {} },
-}
 
 const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
   createWrapper({
@@ -65,7 +60,7 @@ describe(createWrapper, () => {
     describe('getCategories() should not be called if categories are provided', () => {
       test('promise-wrapped', async () => {
         wrapTestAnalytics({
-          shouldLoad: () => Promise.resolve(fixtures.GET_CATEGORIES_RESPONSE),
+          shouldLoad: () => Promise.resolve(GET_CATEGORIES_RESPONSE),
         })
         analytics.load(DEFAULT_LOAD_OPTS)
         await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
@@ -74,7 +69,7 @@ describe(createWrapper, () => {
 
       test('non-promise wrapped', async () => {
         wrapTestAnalytics({
-          shouldLoad: () => fixtures.GET_CATEGORIES_RESPONSE,
+          shouldLoad: () => GET_CATEGORIES_RESPONSE,
         })
         analytics.load(DEFAULT_LOAD_OPTS)
         await waitFor(() => expect(analyticsLoadSpy).toBeCalled())
@@ -123,7 +118,7 @@ describe(createWrapper, () => {
         MockIntegrationWithConsentSettings: {
           foo: 123,
           consentSettings: {
-            categories: fixtures.GET_CATEGORIES_RESPONSE,
+            categories: GET_CATEGORIES_RESPONSE,
           },
         },
         MockIntegrationWhereUserHasNotConsented: {
