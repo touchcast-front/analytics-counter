@@ -23,14 +23,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     validateGetCategories(getCategories)
 
     const ogLoad = analytics.load
-    // register listener to stamp all events with latest consent information
-    analytics.addSourceMiddleware(async ({ payload, next }: any) => {
-      payload.obj.context.consent = {
-        ...payload.obj.context.consent,
-        categoryPreferences: await getCategories(),
-      }
-      next()
-    })
 
     // eslint-disable-next-line @typescript-eslint/require-await
     const loadWithConsent: Analytics['load'] = async (
@@ -47,6 +39,15 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       if (consentRequirementDisabled) {
         return ogLoad.call(analytics, settings, options)
       }
+
+      // register listener to stamp all events with latest consent information
+      analytics.addSourceMiddleware(async ({ payload, next }: any) => {
+        payload.obj.context.consent = {
+          ...payload.obj.context.consent,
+          categoryPreferences: await getCategories(),
+        }
+        next()
+      })
 
       const normalizedSettings: Settings =
         typeof settings === 'string' ? { writeKey: settings } : settings

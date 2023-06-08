@@ -219,6 +219,64 @@ describe(createWrapper, () => {
     expect(integrations.mockIntegration).toBeTruthy()
   })
 
+  it('should invoke addSourceMiddleware in order to stamp the event', async () => {
+    wrapTestAnalytics()
+    await analytics.load(DEFAULT_LOAD_OPTS)
+    expect(addSourceMiddlewareSpy).toBeCalledWith(expect.any(Function))
+  })
+
+  describe('disableConsentRequirement', () => {
+    it('should load analytics as usual if disableConsentRequirement ', async () => {
+      wrapTestAnalytics({
+        disableConsentRequirement: () => true,
+      })
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(analyticsLoadSpy).toBeCalled()
+    })
+
+    it('should not call shouldLoad', async () => {
+      const shouldLoad = jest.fn()
+      wrapTestAnalytics({
+        disableConsentRequirement: () => true,
+        shouldLoad,
+      })
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(shouldLoad).not.toBeCalled()
+    })
+
+    it('should not set cdn settings', async () => {
+      const mockCdnSettings = {
+        integrations: {
+          mockIntegration: {
+            ...createConsentSettings(['Foo']),
+          },
+        },
+      }
+      wrapTestAnalytics({
+        disableConsentRequirement: () => true,
+        getCategories: () => ({ Foo: false }),
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_OPTS,
+        cdnSettings: mockCdnSettings,
+      })
+      const integrations = analyticsLoadSpy.mock.lastCall[0].cdnSettings
+        ?.integrations as any
+      // should not alter cdn settings
+      expect(integrations.mockIntegration).toEqual(
+        mockCdnSettings.integrations.mockIntegration
+      )
+    })
+
+    it('should not stamp the event with consent info', async () => {
+      wrapTestAnalytics({
+        disableConsentRequirement: () => true,
+      })
+      await analytics.load(DEFAULT_LOAD_OPTS)
+      expect(addSourceMiddlewareSpy).not.toBeCalled()
+    })
+  })
+
   describe('disableAll', () => {
     it('should load analytics if disableAll returns false', async () => {
       wrapTestAnalytics({
