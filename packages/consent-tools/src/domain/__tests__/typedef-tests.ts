@@ -1,4 +1,7 @@
-import { AnalyticsSnippet, AnalyticsBrowser } from '@segment/analytics-next'
+import type {
+  AnalyticsSnippet,
+  AnalyticsBrowser,
+} from '@segment/analytics-next'
 import { createWrapper } from '../create-wrapper'
 
 {
