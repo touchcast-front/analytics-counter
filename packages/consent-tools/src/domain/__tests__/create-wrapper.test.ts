@@ -121,7 +121,7 @@ describe(createWrapper, () => {
     })
   })
 
-  describe('Disabling/Enabling integrations (device mode gating)', () => {
+  describe('Disabling/Enabling integrations before analytics initialization (device mode gating)', () => {
     it('should disable integration if user explicitly does not consent to category', async () => {
       wrapTestAnalytics()
 
