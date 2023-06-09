@@ -8,7 +8,6 @@ import {
 import { validateCategories, validateGetCategories } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 
-// ./__tests__/create-wrapper.test.ts
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   const {
     disableAll,
@@ -22,7 +21,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
     const ogLoad = analytics.load
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     const loadWithConsent: AnyAnalytics['load'] = async (
       settings,
       options
