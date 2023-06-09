@@ -1,7 +1,7 @@
 import {
   Categories,
   CreateWrapper,
-  type,
+  IntegrationCategoryMappings,
   AnyAnalytics,
   CDNSettingsIntegrations,
 } from '../types'
@@ -26,12 +26,12 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       options
     ): Promise<void> => {
       // do not load anything -- segment included
-      if (disableAll?.()) {
+      if (await disableAll?.()) {
         return
       }
 
       // ignore consent -- just call analytics.load as usual
-      const consentRequirementDisabled = disableConsentRequirement?.()
+      const consentRequirementDisabled = await disableConsentRequirement?.()
       if (consentRequirementDisabled) {
         return ogLoad.call(analytics, settings, options)
       }
@@ -50,7 +50,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       return ogLoad.call(analytics, settings, {
         updateCDNSettings: (cdnSettings) => {
-          const integrations = buildIntegrationsWithDisabled(
+          const integrations = omitDisabledIntegrations(
             cdnSettings.integrations,
             initialCategories,
             integrationCategoryMappings
@@ -90,10 +90,10 @@ const parseConsentCategories = (
 /**
  * Build integrations object, setting some integrations to false
  */
-const buildIntegrationsWithDisabled = (
+const omitDisabledIntegrations = (
   integrations: CDNSettingsIntegrations,
   consentedCategories: Categories,
-  intgCategoryMappings?: type
+  intgCategoryMappings?: IntegrationCategoryMappings
 ): CDNSettingsIntegrations =>
   Object.keys(integrations).reduce<CDNSettingsIntegrations>((acc, intgName) => {
     const categories = intgCategoryMappings
@@ -106,8 +106,12 @@ const buildIntegrationsWithDisabled = (
     const isConsented =
       isMissingCategories || categories.some((c) => consentedCategories[c])
 
-    return {
-      ...acc,
-      [intgName]: isConsented ? integrations[intgName] : false,
+    if (!isConsented) {
+      return acc
+    } else {
+      return {
+        ...acc,
+        [intgName]: integrations[intgName],
+      }
     }
   }, {})

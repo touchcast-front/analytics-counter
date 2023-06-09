@@ -62,22 +62,22 @@ export interface CreateWrapperOptions {
    * This function should return a list of initial categories.
    * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
    **/
-  shouldLoad?: () => Promise<Categories | undefined> | Categories | undefined
+  shouldLoad?: () => Categories | undefined | Promise<Categories | undefined>
 
   /**
    * Fetch the categories which stamp every event. Called each time a new Segment event is dispatched.
    **/
-  getCategories: () => Promise<Categories> | Categories
+  getCategories: () => Categories | Promise<Categories>
 
   /**
    * Dynamically disable consent requirement (Segment analytics will still load if .load is called, but it will be as if the wrapper does not exist. No event stamping will occur.)
    **/
-  disableConsentRequirement?: () => boolean
+  disableConsentRequirement?: () => boolean | Promise<boolean>
 
   /**
    * Disable all wrapper functionality including segment analytics e.g devMode – the entire wrapper becomes a noop. Useful in a testing environment. analytics.load() will have no effect.
    **/
-  disableAll?: () => boolean
+  disableAll?: () => boolean | Promise<boolean>
 
   /**
    * A callback that should be passed to onConsentChanged. This is neccessary for sending automatic "consent changed" events to segment (Future behavior)

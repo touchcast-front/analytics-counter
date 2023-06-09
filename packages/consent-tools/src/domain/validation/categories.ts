@@ -10,7 +10,7 @@ export function validateCategories(ctgs: unknown): asserts ctgs is Categories {
     }
   }
   throw new ValidationError(
-    `Categories should be {[categoryName: string]: boolean}`,
+    `Consent Categories should be {[categoryName: string]: boolean}`,
     ctgs
   )
 }

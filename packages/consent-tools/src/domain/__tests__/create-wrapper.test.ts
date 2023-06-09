@@ -16,9 +16,8 @@ const createConsentSettings = (categories: string[] = []) => ({
   },
 })
 
-const mockGetCategories = jest
-  .fn()
-  .mockImplementation(() => GET_CATEGORIES_RESPONSE)
+let mockGetCategories: jest.MockedFn<CreateWrapperOptions['getCategories']> =
+  jest.fn().mockImplementation(() => GET_CATEGORIES_RESPONSE)
 
 const analyticsLoadSpy = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
@@ -51,73 +50,127 @@ const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
   })(analytics)
 
 describe(createWrapper, () => {
-  describe('shouldLoad() / fetching initial categories', () => {
-    it('should wait for shouldLoad() to resolve/return before calling analytics.load()', async () => {
+  describe('shouldLoad / getCategories', () => {
+    it('should first call shouldLoad(), then wait for it to resolve/return before calling analytics.load()', async () => {
+      const fnCalls: string[] = []
+      analyticsLoadSpy.mockImplementationOnce(() => {
+        fnCalls.push('analytics.load')
+      })
+
       const shouldLoadMock: jest.Mock<undefined> = jest
         .fn()
-        .mockImplementation(() => undefined)
+        .mockImplementationOnce(async () => {
+          fnCalls.push('shouldLoad')
+        })
 
       wrapTestAnalytics({
         shouldLoad: shouldLoadMock,
       })
 
-      const loaded = analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(analyticsLoadSpy).not.toHaveBeenCalled()
-      expect(shouldLoadMock).toBeCalled()
-      await loaded
-      expect(analyticsLoadSpy).toBeCalled()
-    })
-    describe('getCategories() should not be called if categories are provided', () => {
-      test('promise-wrapped', async () => {
-        wrapTestAnalytics({
-          shouldLoad: () => Promise.resolve(GET_CATEGORIES_RESPONSE),
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(analyticsLoadSpy).toBeCalled()
-        expect(mockGetCategories).not.toBeCalled()
-      })
-
-      test('non-promise wrapped', async () => {
-        wrapTestAnalytics({
-          shouldLoad: () => GET_CATEGORIES_RESPONSE,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(analyticsLoadSpy).toBeCalled()
-        expect(mockGetCategories).not.toBeCalled()
-      })
-    })
-
-    it('should call getCategories() if shouldLoad() option returns nil', async () => {
-      wrapTestAnalytics({ shouldLoad: () => undefined })
       await analytics.load(DEFAULT_LOAD_SETTINGS)
+      expect(fnCalls).toEqual(['shouldLoad', 'analytics.load'])
+    })
+
+    test.each([
+      {
+        shouldLoad: () => undefined,
+        description: 'undefined',
+      },
+      {
+        shouldLoad: () => Promise.resolve(undefined),
+        description: 'Promise<undefined>',
+      },
+    ])(
+      'if shouldLoad() returns $description, intial categories will come from getCategories()',
+      async ({ shouldLoad }) => {
+        const mockCdnSettings = {
+          integrations: {
+            mockIntegration: {
+              // multiple consent categories
+              foo: 123,
+              ...createConsentSettings(['Advertising']),
+            },
+          },
+        }
+
+        wrapTestAnalytics({
+          shouldLoad: shouldLoad,
+        })
+        await analytics.load({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
+
+        expect(analyticsLoadSpy).toBeCalled()
+        expect(mockGetCategories).toBeCalled()
+        expect(
+          getAnalyticsLoadLastCall().updateCDNSettings(mockCdnSettings)
+        ).toBeTruthy()
+      }
+    )
+
+    test.each([
+      {
+        getCategories: () => ({ Advertising: true }),
+        description: 'Categories (sync)',
+      },
+      {
+        getCategories: () => Promise.resolve({ Advertising: true }),
+        description: 'Promise<Categories>',
+      },
+    ])('getCategories() can return $description', async ({ getCategories }) => {
+      const mockCdnSettings = {
+        integrations: {
+          mockIntegration: {
+            // multiple consent categories
+            foo: 123,
+            ...createConsentSettings(['Advertising']),
+          },
+        },
+      }
+
+      mockGetCategories =
+        mockGetCategories.mockImplementationOnce(getCategories)
+
+      wrapTestAnalytics({
+        getCategories: mockGetCategories,
+        shouldLoad: () => undefined,
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
       expect(analyticsLoadSpy).toBeCalled()
       expect(mockGetCategories).toBeCalled()
-    })
-
-    it('should call getCategories() if shouldLoad() option returns empty promise', async () => {
-      wrapTestAnalytics({ shouldLoad: () => Promise.resolve(undefined) })
-      await analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(analyticsLoadSpy).toBeCalled()
-      expect(mockGetCategories).toBeCalled()
+      expect(
+        getAnalyticsLoadLastCall().updateCDNSettings(mockCdnSettings)
+      ).toBeTruthy()
     })
   })
 
-  describe('Config Validation', () => {
+  describe('Validation', () => {
     it('should throw an error if categories are in the wrong format', async () => {
       wrapTestAnalytics({
         shouldLoad: () => Promise.resolve('sup' as any),
       })
-      try {
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        throw Error('Test fail')
-      } catch (err: any) {
-        expect(err.message).toMatch(/validation/i)
-      }
+      await expect(() => analytics.load(DEFAULT_LOAD_SETTINGS)).rejects.toThrow(
+        /validation/i
+      )
+    })
+
+    it('should throw an error if categories are undefined', async () => {
+      wrapTestAnalytics({
+        getCategories: () => undefined as any,
+        shouldLoad: () => undefined,
+      })
+      await expect(() => analytics.load(DEFAULT_LOAD_SETTINGS)).rejects.toThrow(
+        /validation/i
+      )
     })
   })
 
   describe('Disabling/Enabling integrations before analytics initialization (device mode gating)', () => {
-    it('should disable integration if user explicitly does not consent to category', async () => {
+    it('should omit integration if user explicitly does not consent to category', async () => {
       wrapTestAnalytics()
 
       const mockCdnSettings = {
@@ -147,7 +200,6 @@ describe(createWrapper, () => {
       expect(integrations).toEqual({
         MockIntegrationWithNoConsentSettings:
           cdnIntegrations.MockIntegrationWithNoConsentSettings,
-        MockIntegrationWhereUserHasNotConsented: false,
       })
     })
 
