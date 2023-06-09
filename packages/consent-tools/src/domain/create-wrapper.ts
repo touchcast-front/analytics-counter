@@ -1,9 +1,9 @@
 import {
   Categories,
   CreateWrapper,
-  IntegrationCategoryMappings,
+  type,
   AnyAnalytics,
-  Integrations,
+  CDNSettingsIntegrations,
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
@@ -65,22 +65,25 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 }
 
 /**
- * Get list of categories for integration JSON object
+ * Parse list of categories from `cdnSettings.integrations` object
  * @example
  * returns ["Analytics", "Advertising"]
  */
-const getConsentCategories = (integration: unknown): string[] | undefined => {
+const parseConsentCategories = (
+  integrations: unknown
+): string[] | undefined => {
   if (
-    integration &&
-    typeof integration === 'object' &&
-    'consentSettings' in integration &&
-    typeof integration.consentSettings === 'object' &&
-    integration.consentSettings &&
-    'categories' in integration.consentSettings &&
-    Array.isArray(integration.consentSettings.categories)
+    integrations &&
+    typeof integrations === 'object' &&
+    'consentSettings' in integrations &&
+    typeof integrations.consentSettings === 'object' &&
+    integrations.consentSettings &&
+    'categories' in integrations.consentSettings &&
+    Array.isArray(integrations.consentSettings.categories)
   ) {
-    return (integration.consentSettings.categories as string[]) || undefined
+    return (integrations.consentSettings.categories as string[]) || undefined
   }
+
   return undefined
 }
 
@@ -88,14 +91,14 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
  * Build integrations object, setting some integrations to false
  */
 const buildIntegrationsWithDisabled = (
-  integrations: Integrations,
+  integrations: CDNSettingsIntegrations,
   consentedCategories: Categories,
-  intgCategoryMappings?: IntegrationCategoryMappings
-): Integrations =>
-  Object.keys(integrations).reduce<Integrations>((acc, intgName) => {
+  intgCategoryMappings?: type
+): CDNSettingsIntegrations =>
+  Object.keys(integrations).reduce<CDNSettingsIntegrations>((acc, intgName) => {
     const categories = intgCategoryMappings
       ? intgCategoryMappings[intgName]
-      : getConsentCategories(integrations[intgName])
+      : parseConsentCategories(integrations[intgName])
 
     const isMissingCategories = !categories || !categories.length
 

@@ -33,19 +33,17 @@ export interface AnyAnalytics {
   ): any
 }
 
-export interface Integrations {
-  [key: string]: any
-}
-
-export interface CDNSettings {
-  integrations: Integrations
-  [key: string]: any
-}
-
+/**
+ * This function returns a "wrapped" version of analytics.
+ */
 export interface Wrapper {
+  // Returns void rather than analytics to emphasize that this function replaces the .load function of the underlying instance.
   (analytics: AnyAnalytics): void
 }
 
+/**
+ * This function returns a function which returns a "wrapped" version of analytics
+ */
 export interface CreateWrapper {
   (options: CreateWrapperOptions): Wrapper
 }
@@ -54,17 +52,15 @@ export interface Categories {
   [category: string]: boolean
 }
 
-export type RegisterConsentChanged = (
-  callback: (categories: Categories) => void
-) => void
-
 export interface IntegrationCategoryMappings {
-  [integrationCreationName: string]: string[]
+  [integrationName: string]: string[]
 }
 
 export interface CreateWrapperOptions {
   /**
-   * Wait until this function resolves/returns before fetching categories or loading segment. Optionally, returns initial categories. If undefined, init immediately.
+   * Wait until this function resolves/returns before loading analytics.
+   * This function should return a list of initial categories.
+   * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
    **/
   shouldLoad?: () => Promise<Categories | undefined> | Categories | undefined
 
@@ -86,7 +82,7 @@ export interface CreateWrapperOptions {
   /**
    * A callback that should be passed to onConsentChanged. This is neccessary for sending automatic "consent changed" events to segment (Future behavior)
    **/
-  registerConsentChanged?: RegisterConsentChanged
+  registerConsentChanged?: (callback: (categories: Categories) => void) => void
 
   /**
    * Object that maps `integrationName -> categories`. Typically, this is not needed, as this data comes from the CDN and is attached to each integration.
@@ -95,4 +91,18 @@ export interface CreateWrapperOptions {
    * {"Braze Web Mode (Actions)": ["Advertising", "Analytics"]
    */
   integrationCategoryMappings?: IntegrationCategoryMappings
+}
+
+export interface CDNSettings {
+  integrations: CDNSettingsIntegrations
+  [key: string]: any
+}
+
+/**
+ *CDN Settings Integrations object.
+ * @example
+ * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
+ */
+export interface CDNSettingsIntegrations {
+  [integrationName: string]: { [key: string]: any }
 }
