@@ -2,7 +2,7 @@ import type {
   AnalyticsSnippet,
   AnalyticsBrowser,
 } from '@segment/analytics-next'
-import { createWrapper } from '../create-wrapper'
+import { createWrapper } from '../../index'
 
 {
   const wrap = createWrapper({ getCategories: () => ({ foo: true }) })

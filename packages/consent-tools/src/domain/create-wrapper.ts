@@ -4,18 +4,23 @@ import {
   IntegrationCategoryMappings,
   AnyAnalytics,
   CDNSettingsIntegrations,
+  InitOptions,
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
+import { CreateWrapperEventEmitter } from './event-emitter'
+import { pipe } from '../utils'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   const {
-    disableAll,
+    disableSegmentInitialization,
     disableConsentRequirement,
     getCategories,
     shouldLoad,
     integrationCategoryMappings,
   } = createWrapperOptions
+  const emitter = new CreateWrapperEventEmitter()
+
   return (analytics) => {
     validateGetCategories(getCategories)
 
@@ -26,7 +31,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       options
     ): Promise<void> => {
       // do not load anything -- segment included
-      if (await disableAll?.()) {
+      if (await disableSegmentInitialization?.()) {
         return
       }
 
@@ -37,7 +42,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       }
 
       // use these categories to disable the appropriate device mode plugins
-      // if shouldLoad throws an error, abort any analytics modification
       const initialCategories =
         (await shouldLoad?.()) || (await getCategories())
 
@@ -45,22 +49,41 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getCategories)
+        createConsentStampingMiddleware(
+          getCategories,
+          disableConsentRequirement
+        )
       )
 
+      emitter.emit('real_analytics_load_called', {
+        initialCategories,
+        analytics,
+      })
+
+      const updateCDNSettings: InitOptions['updateCDNSettings'] = (
+        cdnSettings
+      ) => {
+        const integrations = omitDisabledIntegrations(
+          cdnSettings.integrations,
+          initialCategories,
+          integrationCategoryMappings
+        )
+        const settingsWithOverrides = { ...cdnSettings, integrations }
+        return settingsWithOverrides
+      }
+
       return ogLoad.call(analytics, settings, {
-        updateCDNSettings: (cdnSettings) => {
-          const integrations = omitDisabledIntegrations(
-            cdnSettings.integrations,
-            initialCategories,
-            integrationCategoryMappings
-          )
-          const settingsWithOverrides = { ...cdnSettings, integrations }
-          return settingsWithOverrides
-        },
+        ...options,
+        updateCDNSettings: pipe(
+          updateCDNSettings,
+          options?.updateCDNSettings ? options.updateCDNSettings : (f) => f
+        ),
       })
     }
     analytics.load = loadWithConsent
+    return {
+      emitter,
+    }
   }
 }
 

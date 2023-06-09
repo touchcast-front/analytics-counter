@@ -32,5 +32,8 @@
     "directory": "packages/consent-tools",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "dependencies": {
+    "@segment/analytics-core": "1.3.0"
   }
 }

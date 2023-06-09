@@ -321,64 +321,66 @@ describe(createWrapper, () => {
   })
 
   describe('disableConsentRequirement', () => {
-    it('should load analytics as usual', async () => {
-      wrapTestAnalytics({
-        disableConsentRequirement: () => true,
+    describe('if true on wrapper initialization', () => {
+      it('should load analytics as usual', async () => {
+        wrapTestAnalytics({
+          disableConsentRequirement: () => true,
+        })
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        expect(analyticsLoadSpy).toBeCalled()
       })
-      await analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(analyticsLoadSpy).toBeCalled()
-    })
 
-    it('should not call shouldLoad', async () => {
-      const shouldLoad = jest.fn()
-      wrapTestAnalytics({
-        disableConsentRequirement: () => true,
-        shouldLoad,
+      it('should not call shouldLoad if called on first', async () => {
+        const shouldLoad = jest.fn()
+        wrapTestAnalytics({
+          disableConsentRequirement: () => true,
+          shouldLoad,
+        })
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        expect(shouldLoad).not.toBeCalled()
       })
-      await analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(shouldLoad).not.toBeCalled()
-    })
 
-    it('should pass all arguments directly to the actual analytics.load instance', async () => {
-      const mockCdnSettings = {
-        integrations: {
-          mockIntegration: {
-            ...createConsentSettings(['Foo']),
+      it('should pass all arguments directly to the actual analytics.load instance', async () => {
+        const mockCdnSettings = {
+          integrations: {
+            mockIntegration: {
+              ...createConsentSettings(['Foo']),
+            },
           },
-        },
-      }
-      wrapTestAnalytics({
-        disableConsentRequirement: () => true,
-        getCategories: () => ({ Foo: false }),
+        }
+        wrapTestAnalytics({
+          disableConsentRequirement: () => true,
+          getCategories: () => ({ Foo: false }),
+        })
+
+        const loadArgs: [any, any] = [
+          {
+            ...DEFAULT_LOAD_SETTINGS,
+            cdnSettings: mockCdnSettings,
+          },
+          {
+            retryQueue: false,
+          },
+        ]
+        await analytics.load(...loadArgs)
+        expect(analyticsLoadSpy).toBeCalled()
+        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
       })
 
-      const loadArgs: [any, any] = [
-        {
-          ...DEFAULT_LOAD_SETTINGS,
-          cdnSettings: mockCdnSettings,
-        },
-        {
-          retryQueue: false,
-        },
-      ]
-      await analytics.load(...loadArgs)
-      expect(analyticsLoadSpy).toBeCalled()
-      expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
-    })
-
-    it('should not stamp the event with consent info', async () => {
-      wrapTestAnalytics({
-        disableConsentRequirement: () => true,
+      it('should not stamp the event with consent info', async () => {
+        wrapTestAnalytics({
+          disableConsentRequirement: () => true,
+        })
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        expect(addSourceMiddlewareSpy).not.toBeCalled()
       })
-      await analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(addSourceMiddlewareSpy).not.toBeCalled()
     })
   })
 
-  describe('disableAll', () => {
+  describe('disableSegmentInitialization', () => {
     it('should load analytics if disableAll returns false', async () => {
       wrapTestAnalytics({
-        disableAll: () => false,
+        disableSegmentInitialization: () => false,
       })
       await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
@@ -386,9 +388,11 @@ describe(createWrapper, () => {
 
     it('should not load analytics if disableAll returns true', async () => {
       wrapTestAnalytics({
-        disableAll: () => true,
+        disableSegmentInitialization: () => true,
       })
       await analytics.load(DEFAULT_LOAD_SETTINGS)
+      expect(mockGetCategories).not.toBeCalled()
+      expect(addSourceMiddlewareSpy).not.toBeCalled()
       expect(analyticsLoadSpy).not.toBeCalled()
     })
   })

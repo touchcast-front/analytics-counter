@@ -1,3 +1,5 @@
+import { CreateWrapperEventEmitter } from '../domain/event-emitter'
+
 /**
  * first argument to AnalyticsBrowser.load
  */
@@ -33,12 +35,16 @@ export interface AnyAnalytics {
   ): any
 }
 
+export interface WrapperContext {
+  emitter: CreateWrapperEventEmitter
+}
+
 /**
  * This function returns a "wrapped" version of analytics.
  */
 export interface Wrapper {
   // Returns void rather than analytics to emphasize that this function replaces the .load function of the underlying instance.
-  (analytics: AnyAnalytics): void
+  (analytics: AnyAnalytics): WrapperContext
 }
 
 /**
@@ -70,14 +76,17 @@ export interface CreateWrapperOptions {
   getCategories: () => Categories | Promise<Categories>
 
   /**
-   * Dynamically disable consent requirement (Segment analytics will still load if .load is called, but it will be as if the wrapper does not exist. No event stamping will occur.)
+   * This disables any consent requirement (i.e device mode gating, event pref stamping).
+   * Called on wrapper initialization, and thereafter on each event.
    **/
   disableConsentRequirement?: () => boolean | Promise<boolean>
 
   /**
-   * Disable all wrapper functionality including segment analytics e.g devMode – the entire wrapper becomes a noop. Useful in a testing environment. analytics.load() will have no effect.
+   * Disable the Segment analytics SDK completely. analytics.load() will have no effect.
+   * .track / .identify etc calls should not throw any errors, but analytics settings will never be fetched and no events will be sent to Segment.
+   * Called on wrapper initialization. This can be useful in dev environments (e.g. 'devMode').
    **/
-  disableAll?: () => boolean | Promise<boolean>
+  disableSegmentInitialization?: () => boolean | Promise<boolean>
 
   /**
    * A callback that should be passed to onConsentChanged. This is neccessary for sending automatic "consent changed" events to segment (Future behavior)
