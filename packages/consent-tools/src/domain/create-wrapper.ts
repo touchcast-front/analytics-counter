@@ -39,6 +39,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       }
 
       // use these categories to disable the appropriate device mode plugins
+      // if shouldLoad throws an error, abort any analytics modification
       const initialCategories =
         (await shouldLoad?.()) || (await getCategories())
 
