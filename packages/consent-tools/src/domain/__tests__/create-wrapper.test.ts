@@ -122,7 +122,7 @@ describe(createWrapper, () => {
     })
   })
 
-  it('should set integrations to false if user explicitly does not consent to category', async () => {
+  it('should disable integration if user explicitly does not consent to category', async () => {
     wrapTestAnalytics()
 
     const mockCdnSettings = {
@@ -156,7 +156,7 @@ describe(createWrapper, () => {
     })
   })
 
-  it('should not touch integrations in cases where consent settings are unavailable', async () => {
+  it('should allow integration in cases where consent settings are unavailable', async () => {
     wrapTestAnalytics({
       getCategories: () => GET_CATEGORIES_RESPONSE,
     })
@@ -187,7 +187,8 @@ describe(createWrapper, () => {
     const integrations = getLoadSpyIntegrations(mockCdnSettings)
     expect(integrations).toEqual(mockCdnSettings.integrations)
   })
-  it('should not touch integrations if the integration is explicitly allowed', async () => {
+
+  it('should allow integration if the integration has a category that is consented to', async () => {
     const mockCdnSettings = {
       integrations: {
         nope: {
@@ -214,7 +215,7 @@ describe(createWrapper, () => {
     expect(integrations.nope).toBeFalsy()
   })
 
-  it('should not touch integration if an integration has multiple categories, and user has multiple categories, but only consents to one', async () => {
+  it('should allow integration if an integration has multiple categories, and user has multiple categories, but only consents to one', async () => {
     const mockCdnSettings = {
       integrations: {
         nope: {
@@ -241,7 +242,7 @@ describe(createWrapper, () => {
     expect(integrations.mockIntegration).toBeTruthy()
   })
 
-  it('should work if integration has multiple consent categories but user has only consented to one category', async () => {
+  it('should allow integration if it has multiple consent categories but user has only consented to one category', async () => {
     const mockCdnSettings = {
       integrations: {
         mockIntegration: {
