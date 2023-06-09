@@ -1,10 +1,5 @@
 import { createWrapper } from '../create-wrapper'
-import {
-  CreateWrapperOptions,
-  AnyAnalytics,
-  Settings,
-  InitOptions,
-} from '../../types'
+import { CreateWrapperOptions, AnyAnalytics } from '../../types'
 
 const GET_CATEGORIES_RESPONSE = { Advertising: true }
 
