@@ -38,16 +38,17 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         return ogLoad.call(analytics, settings, options)
       }
 
-      // register listener to stamp all events with latest consent information
-      analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getCategories)
-      )
-
       // use these categories to disable the appropriate device mode plugins
+      // if shoud load throws an error
       const initialCategories =
         (await shouldLoad?.()) || (await getCategories())
 
       validateCategories(initialCategories)
+
+      // register listener to stamp all events with latest consent information
+      analytics.addSourceMiddleware(
+        createConsentStampingMiddleware(getCategories)
+      )
 
       return ogLoad.call(analytics, settings, {
         updateCDNSettings: (cdnSettings) => {
