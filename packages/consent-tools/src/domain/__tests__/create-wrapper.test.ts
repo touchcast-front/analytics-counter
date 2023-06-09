@@ -56,23 +56,22 @@ const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
   })(analytics)
 
 describe(createWrapper, () => {
-  it('should wait for shouldLoad() to resolve/return before calling analytics.load()', async () => {
-    const shouldLoadMock: jest.Mock<undefined> = jest
-      .fn()
-      .mockImplementation(() => undefined)
+  describe('shouldLoad() / fetching initial categories', () => {
+    it('should wait for shouldLoad() to resolve/return before calling analytics.load()', async () => {
+      const shouldLoadMock: jest.Mock<undefined> = jest
+        .fn()
+        .mockImplementation(() => undefined)
 
-    wrapTestAnalytics({
-      shouldLoad: shouldLoadMock,
+      wrapTestAnalytics({
+        shouldLoad: shouldLoadMock,
+      })
+
+      const loaded = analytics.load(DEFAULT_LOAD_SETTINGS)
+      expect(analyticsLoadSpy).not.toHaveBeenCalled()
+      expect(shouldLoadMock).toBeCalled()
+      await loaded
+      expect(analyticsLoadSpy).toBeCalled()
     })
-
-    const loaded = analytics.load(DEFAULT_LOAD_SETTINGS)
-    expect(analyticsLoadSpy).not.toHaveBeenCalled()
-    expect(shouldLoadMock).toBeCalled()
-    await loaded
-    expect(analyticsLoadSpy).toBeCalled()
-  })
-
-  describe('Fetching initial categories', () => {
     describe('getCategories() should not be called if categories are provided', () => {
       test('promise-wrapped', async () => {
         wrapTestAnalytics({
@@ -122,148 +121,150 @@ describe(createWrapper, () => {
     })
   })
 
-  it('should disable integration if user explicitly does not consent to category', async () => {
-    wrapTestAnalytics()
+  describe('Disabling/Enabling integrations (device mode gating)', () => {
+    it('should disable integration if user explicitly does not consent to category', async () => {
+      wrapTestAnalytics()
 
-    const mockCdnSettings = {
-      integrations: {
-        MockIntegrationWithNoConsentSettings: {
-          foo: 123,
-        },
-        MockIntegrationWhereUserHasNotConsented: {
-          foo: 123,
-          consentSettings: {
-            categories: ['SOME_UNCONSENTED_CATEGORY'],
+      const mockCdnSettings = {
+        integrations: {
+          MockIntegrationWithNoConsentSettings: {
+            foo: 123,
+          },
+          MockIntegrationWhereUserHasNotConsented: {
+            foo: 123,
+            consentSettings: {
+              categories: ['SOME_UNCONSENTED_CATEGORY'],
+            },
           },
         },
-      },
-    }
+      }
 
-    await analytics.load({
-      ...DEFAULT_LOAD_SETTINGS,
-      cdnSettings: mockCdnSettings,
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      expect(analyticsLoadSpy).toBeCalled()
+      const integrations = analyticsLoadSpy.mock.lastCall[1].updateCDNSettings(
+        mockCdnSettings
+      ).integrations as any
+      const cdnIntegrations = mockCdnSettings.integrations
+      expect(integrations).toEqual({
+        MockIntegrationWithNoConsentSettings:
+          cdnIntegrations.MockIntegrationWithNoConsentSettings,
+        MockIntegrationWhereUserHasNotConsented: false,
+      })
     })
 
-    expect(analyticsLoadSpy).toBeCalled()
-    const integrations = analyticsLoadSpy.mock.lastCall[1].updateCDNSettings(
-      mockCdnSettings
-    ).integrations as any
-    const cdnIntegrations = mockCdnSettings.integrations
-    expect(integrations).toEqual({
-      MockIntegrationWithNoConsentSettings:
-        cdnIntegrations.MockIntegrationWithNoConsentSettings,
-      MockIntegrationWhereUserHasNotConsented: false,
-    })
-  })
+    it('should allow integration in cases where consent settings are unavailable', async () => {
+      wrapTestAnalytics({
+        getCategories: () => GET_CATEGORIES_RESPONSE,
+      })
 
-  it('should allow integration in cases where consent settings are unavailable', async () => {
-    wrapTestAnalytics({
-      getCategories: () => GET_CATEGORIES_RESPONSE,
-    })
-
-    const mockCdnSettings = {
-      integrations: {
-        MockIntegrationWithNoConsentSettings: {
-          foo: 123,
-        },
-        MockIntegrationWithEmptyUserCategories: {
-          consentSettings: {
-            categories: [],
+      const mockCdnSettings = {
+        integrations: {
+          MockIntegrationWithNoConsentSettings: {
+            foo: 123,
+          },
+          MockIntegrationWithEmptyUserCategories: {
+            consentSettings: {
+              categories: [],
+            },
+          },
+          MockIntegrationWithEmptyConsentSettingsObject: {
+            foo: 123,
+            consentSettings: {},
           },
         },
-        MockIntegrationWithEmptyConsentSettingsObject: {
-          foo: 123,
-          consentSettings: {},
+      }
+
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      expect(analyticsLoadSpy).toBeCalled()
+      const integrations = getLoadSpyIntegrations(mockCdnSettings)
+      expect(integrations).toEqual(mockCdnSettings.integrations)
+    })
+
+    it('should allow integration if the integration has a category that is consented to', async () => {
+      const mockCdnSettings = {
+        integrations: {
+          nope: {
+            foo: 123,
+            ...createConsentSettings(['not.a.category']),
+          },
+          mockIntegration: {
+            foo: 123,
+            ...createConsentSettings(Object.keys(GET_CATEGORIES_RESPONSE)),
+          },
         },
-      },
-    }
+      }
 
-    await analytics.load({
-      ...DEFAULT_LOAD_SETTINGS,
-      cdnSettings: mockCdnSettings,
+      wrapTestAnalytics({
+        getCategories: () => GET_CATEGORIES_RESPONSE,
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+      expect(analyticsLoadSpy).toBeCalled()
+      const integrations = getLoadSpyIntegrations(mockCdnSettings)
+      expect(integrations.mockIntegration).toBeTruthy()
+      expect(integrations.nope).toBeFalsy()
     })
 
-    expect(analyticsLoadSpy).toBeCalled()
-    const integrations = getLoadSpyIntegrations(mockCdnSettings)
-    expect(integrations).toEqual(mockCdnSettings.integrations)
-  })
-
-  it('should allow integration if the integration has a category that is consented to', async () => {
-    const mockCdnSettings = {
-      integrations: {
-        nope: {
-          foo: 123,
-          ...createConsentSettings(['not.a.category']),
+    it('should allow integration if an integration has multiple categories, and user has multiple categories, but only consents to one', async () => {
+      const mockCdnSettings = {
+        integrations: {
+          nope: {
+            bar: 456,
+            ...createConsentSettings(['Nope', 'Never']),
+          },
+          mockIntegration: {
+            foo: 123,
+            ...createConsentSettings(['Bar', 'Something else']),
+          },
         },
-        mockIntegration: {
-          foo: 123,
-          ...createConsentSettings(Object.keys(GET_CATEGORIES_RESPONSE)),
+      }
+
+      wrapTestAnalytics({
+        shouldLoad: () => ({ Foo: true, Bar: true }),
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+      expect(analyticsLoadSpy).toBeCalled()
+      const integrations = getLoadSpyIntegrations(mockCdnSettings)
+      expect(integrations.nope).toBeFalsy()
+      expect(integrations.mockIntegration).toBeTruthy()
+    })
+
+    it('should allow integration if it has multiple consent categories but user has only consented to one category', async () => {
+      const mockCdnSettings = {
+        integrations: {
+          mockIntegration: {
+            // multiple consent categories
+            foo: 123,
+            ...createConsentSettings(['Foo', 'Bar']),
+          },
         },
-      },
-    }
+      }
 
-    wrapTestAnalytics({
-      getCategories: () => GET_CATEGORIES_RESPONSE,
-    })
-    await analytics.load({
-      ...DEFAULT_LOAD_SETTINGS,
-      cdnSettings: mockCdnSettings,
-    })
-    expect(analyticsLoadSpy).toBeCalled()
-    const integrations = getLoadSpyIntegrations(mockCdnSettings)
-    expect(integrations.mockIntegration).toBeTruthy()
-    expect(integrations.nope).toBeFalsy()
-  })
+      wrapTestAnalytics({
+        shouldLoad: () => ({ Foo: true }),
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
 
-  it('should allow integration if an integration has multiple categories, and user has multiple categories, but only consents to one', async () => {
-    const mockCdnSettings = {
-      integrations: {
-        nope: {
-          bar: 456,
-          ...createConsentSettings(['Nope', 'Never']),
-        },
-        mockIntegration: {
-          foo: 123,
-          ...createConsentSettings(['Bar', 'Something else']),
-        },
-      },
-    }
-
-    wrapTestAnalytics({
-      shouldLoad: () => ({ Foo: true, Bar: true }),
+      expect(analyticsLoadSpy).toBeCalled()
+      const integrations = getLoadSpyIntegrations(mockCdnSettings)
+      expect(integrations.mockIntegration).toBeTruthy()
     })
-    await analytics.load({
-      ...DEFAULT_LOAD_SETTINGS,
-      cdnSettings: mockCdnSettings,
-    })
-    expect(analyticsLoadSpy).toBeCalled()
-    const integrations = getLoadSpyIntegrations(mockCdnSettings)
-    expect(integrations.nope).toBeFalsy()
-    expect(integrations.mockIntegration).toBeTruthy()
-  })
-
-  it('should allow integration if it has multiple consent categories but user has only consented to one category', async () => {
-    const mockCdnSettings = {
-      integrations: {
-        mockIntegration: {
-          // multiple consent categories
-          foo: 123,
-          ...createConsentSettings(['Foo', 'Bar']),
-        },
-      },
-    }
-
-    wrapTestAnalytics({
-      shouldLoad: () => ({ Foo: true }),
-    })
-    await analytics.load({
-      ...DEFAULT_LOAD_SETTINGS,
-      cdnSettings: mockCdnSettings,
-    })
-
-    expect(analyticsLoadSpy).toBeCalled()
-    const integrations = getLoadSpyIntegrations(mockCdnSettings)
-    expect(integrations.mockIntegration).toBeTruthy()
   })
 
   it('should invoke addSourceMiddleware in order to stamp the event', async () => {
