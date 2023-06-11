@@ -340,6 +340,26 @@ describe(createWrapper, () => {
         expect(shouldLoad).not.toBeCalled()
       })
 
+      it('should work with promises if false', async () => {
+        const shouldLoad = jest.fn()
+        wrapTestAnalytics({
+          disableConsentRequirement: () => Promise.resolve(false),
+          shouldLoad,
+        })
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        expect(shouldLoad).toBeCalled()
+      })
+
+      it('should work with promises if true', async () => {
+        const shouldLoad = jest.fn()
+        wrapTestAnalytics({
+          disableConsentRequirement: () => Promise.resolve(true),
+          shouldLoad,
+        })
+        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        expect(shouldLoad).not.toBeCalled()
+      })
+
       it('should pass all arguments directly to the actual analytics.load instance', async () => {
         const mockCdnSettings = {
           integrations: {
