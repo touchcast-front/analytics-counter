@@ -53,11 +53,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         )
       )
 
-      emitter.emit('real_analytics_load_called', {
-        initialCategories,
-        analytics,
-      })
-
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
         cdnSettings
       ) => {
