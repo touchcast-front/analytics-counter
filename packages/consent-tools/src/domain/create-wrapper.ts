@@ -58,8 +58,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
           initialCategories,
           integrationCategoryMappings
         )
-        const settingsWithOverrides = { ...cdnSettings, integrations }
-        return settingsWithOverrides
+        return { ...cdnSettings, integrations }
       }
 
       return ogLoad.call(analytics, settings, {
