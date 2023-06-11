@@ -1,5 +1,3 @@
-import { CreateWrapperEventEmitter } from '../domain/event-emitter'
-
 /**
  * first argument to AnalyticsBrowser.load
  */
@@ -35,16 +33,12 @@ export interface AnyAnalytics {
   ): any
 }
 
-export interface WrapperContext {
-  emitter: CreateWrapperEventEmitter
-}
-
 /**
  * This function returns a "wrapped" version of analytics.
  */
 export interface Wrapper {
   // Returns void rather than analytics to emphasize that this function replaces the .load function of the underlying instance.
-  (analytics: AnyAnalytics): WrapperContext
+  (analytics: AnyAnalytics): void
 }
 
 /**

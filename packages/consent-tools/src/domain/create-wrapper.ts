@@ -8,7 +8,6 @@ import {
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
-import { CreateWrapperEventEmitter } from './event-emitter'
 import { pipe } from '../utils'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
@@ -19,7 +18,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     shouldLoad,
     integrationCategoryMappings,
   } = createWrapperOptions
-  const emitter = new CreateWrapperEventEmitter()
 
   return (analytics) => {
     validateGetCategories(getCategories)
@@ -81,9 +79,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       })
     }
     analytics.load = loadWithConsent
-    return {
-      emitter,
-    }
   }
 }
 
