@@ -4,6 +4,7 @@ import {
   IntegrationCategoryMappings,
   AnyAnalytics,
   CDNSettingsIntegrations,
+  CDNSettingsRemotePlugin,
   InitOptions,
 } from '../types'
 import { validateCategories, validateGetCategories } from './validation'
@@ -53,19 +54,30 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
         cdnSettings
       ) => {
-        const integrations = omitDisabledIntegrations(
+        if (!cdnSettings.remotePlugins) {
+          return cdnSettings
+        }
+
+        const remotePlugins = omitDisabledRemotePlugins(
+          cdnSettings.remotePlugins,
           cdnSettings.integrations,
           initialCategories,
           integrationCategoryMappings
         )
-        return { ...cdnSettings, integrations }
+
+        return { ...cdnSettings, remotePlugins }
       }
 
+      const log = (val: any) => {
+        console.log(val)
+        return val
+      }
       return ogLoad.call(analytics, settings, {
         ...options,
         updateCDNSettings: pipe(
           updateCDNSettings,
-          options?.updateCDNSettings ? options.updateCDNSettings : (f) => f
+          options?.updateCDNSettings ? options.updateCDNSettings : (f) => f,
+          log
         ),
       })
     }
@@ -96,18 +108,16 @@ const parseConsentCategories = (
   return undefined
 }
 
-/**
- * Build integrations object, setting some integrations to false
- */
-const omitDisabledIntegrations = (
+const omitDisabledRemotePlugins = (
+  remotePlugins: CDNSettingsRemotePlugin[],
   integrations: CDNSettingsIntegrations,
   consentedCategories: Categories,
   intgCategoryMappings?: IntegrationCategoryMappings
-): CDNSettingsIntegrations =>
-  Object.keys(integrations).reduce<CDNSettingsIntegrations>((acc, intgName) => {
+): CDNSettingsRemotePlugin[] =>
+  remotePlugins.filter(({ creationName }) => {
     const categories = intgCategoryMappings
-      ? intgCategoryMappings[intgName]
-      : parseConsentCategories(integrations[intgName])
+      ? intgCategoryMappings[creationName]
+      : parseConsentCategories(integrations[creationName])
 
     const isMissingCategories = !categories || !categories.length
 
@@ -115,12 +125,5 @@ const omitDisabledIntegrations = (
     const isConsented =
       isMissingCategories || categories.some((c) => consentedCategories[c])
 
-    if (!isConsented) {
-      return acc
-    } else {
-      return {
-        ...acc,
-        [intgName]: integrations[intgName],
-      }
-    }
-  }, {})
+    return isConsented
+  })

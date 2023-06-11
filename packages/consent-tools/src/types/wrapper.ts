@@ -11,7 +11,7 @@ export interface Settings {
  * 2nd arg to AnalyticsBrowser.load / analytics
  */
 export interface InitOptions {
-  updateCDNSettings: (cdnSettings: CDNSettings) => CDNSettings
+  updateCDNSettings(cdnSettings: CDNSettings): CDNSettings
 }
 
 /**
@@ -27,7 +27,7 @@ export interface AnyAnalytics {
    * Either window.analytics.load(...) OR AnalyticsBrowser.load(...)
    */
   load(
-    writeKeyOrSettings: string | Settings,
+    writeKeyOrSettings: any,
     /** See analytics-next function signature for more information. */
     options?: InitOptions
   ): any
@@ -98,7 +98,7 @@ export interface CreateWrapperOptions {
 
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
-  [key: string]: any
+  remotePlugins?: CDNSettingsRemotePlugin[]
 }
 
 /**
@@ -108,4 +108,17 @@ export interface CDNSettings {
  */
 export interface CDNSettingsIntegrations {
   [integrationName: string]: { [key: string]: any }
+}
+
+export interface CDNSettingsRemotePlugin {
+  /** The name of the remote plugin */
+  name: string
+  /** The creation name of the remote plugin */
+  creationName: string
+  /** The url of the javascript file to load */
+  url: string
+  /** The UMD/global name the plugin uses. Plugins are expected to exist here with the `PluginFactory` method signature */
+  libraryName: string
+  /** The settings related to this plugin. */
+  settings: any
 }
