@@ -70,8 +70,8 @@ export interface CreateWrapperOptions {
   getCategories: () => Categories | Promise<Categories>
 
   /**
-   * This disables any consent requirement (i.e device mode gating, event pref stamping).
-   * Called on wrapper initialization, and thereafter on each event.
+   * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
+   * Called on wrapper initialization.
    **/
   disableConsentRequirement?: () => boolean | Promise<boolean>
 

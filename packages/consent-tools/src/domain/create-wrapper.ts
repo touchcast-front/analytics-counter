@@ -47,10 +47,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(
-          getCategories,
-          disableConsentRequirement
-        )
+        createConsentStampingMiddleware(getCategories)
       )
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
